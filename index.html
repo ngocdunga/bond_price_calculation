@@ -1,219 +1,242 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bond Price Calculator (ACT/365F)</title>
-  <style>
-    body { font-family: system-ui; padding: 16px; max-width: 980px; margin: 0 auto; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .box { padding: 14px; border: 1px solid #ddd; border-radius: 14px; }
-    label { display:block; margin-top: 10px; font-size: 14px; }
-    input, select { width: 100%; padding: 10px; margin-top: 6px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    td, th { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
-    .muted { color: #666; font-size: 13px; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bond Price Calculator (ACT/365F)</title>
+
+<style>
+body {
+  font-family: system-ui;
+  padding: 16px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.box {
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+}
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+}
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.muted {
+  color: #666;
+  font-size: 13px;
+}
+</style>
 </head>
+
 <body>
-  <h2>Bond Pricing (ACT/365 Fixed)</h2>
-  <p class="muted">
-    Day count: YearFrac = ActualDays/365 (ACT/365F). :contentReference[oaicite:3]{index=3}
-  </p>
+<h2>Bond Pricing (ACT/365 Fixed)</h2>
+<p class="muted">Day count convention: ACT / 365 Fixed</p>
 
-  <div class="grid">
-    <div class="box">
-      <h3>Inputs</h3>
+<div class="grid">
+  <div class="box">
+    <h3>Inputs</h3>
 
-      <label>Face value</label>
-      <input id="fv" type="number" value="1000" />
+    <label>Face value (VND)</label>
+    <input id="fv" type="number" value="1000000000" />
 
-      <label>Coupon rate (%/year)</label>
-      <input id="c" type="number" value="10" step="0.01"/>
+    <label>Coupon rate (% / year)</label>
+    <input id="c" type="number" value="10" step="0.01" />
 
-      <label>Yield to maturity - nominal (%/year)</label>
-      <input id="y" type="number" value="12" step="0.01"/>
+    <label>Yield to maturity (% / year)</label>
+    <input id="y" type="number" value="12" step="0.01" />
 
-      <label>Coupon frequency</label>
-      <select id="freq">
-        <option value="1">Annual (1)</option>
-        <option value="2" selected>Semi-annual (2)</option>
-        <option value="4">Quarterly (4)</option>
-        <option value="12">Monthly (12)</option>
-      </select>
+    <label>Coupon frequency</label>
+    <select id="freq">
+      <option value="1">Annual</option>
+      <option value="2" selected>Semi-annual</option>
+      <option value="4">Quarterly</option>
+      <option value="12">Monthly</option>
+    </select>
 
-      <label>Issue date (YYYY-MM-DD)</label>
-      <input id="issue" type="date" value="2026-01-05" />
+    <label>Issue date</label>
+    <input id="issue" type="date" value="2026-01-05" />
 
-      <label>Settlement date (YYYY-MM-DD)</label>
-      <input id="settle" type="date" value="2026-04-01" />
+    <label>Settlement date</label>
+    <input id="settle" type="date" value="2026-04-01" />
 
-      <label>Maturity date (YYYY-MM-DD)</label>
-      <input id="mat" type="date" value="2029-01-05" />
-    </div>
-
-    <div class="box">
-      <h3>Results</h3>
-      <div id="out" class="mono">—</div>
-
-      <h4 style="margin-top:16px;">Cashflows (after settlement)</h4>
-      <div id="cfs" class="mono muted">—</div>
-    </div>
+    <label>Maturity date</label>
+    <input id="mat" type="date" value="2029-01-05" />
   </div>
 
-  <script>
-    // --- Date helpers (use UTC to avoid DST issues) ---
-    function parseYMD(ymd) {
-      const [y,m,d] = ymd.split("-").map(Number);
-      return new Date(Date.UTC(y, m-1, d));
-    }
-    function formatYMD(dt) {
-      const y = dt.getUTCFullYear();
-      const m = String(dt.getUTCMonth()+1).padStart(2,"0");
-      const d = String(dt.getUTCDate()).padStart(2,"0");
-      return `${y}-${m}-${d}`;
-    }
-    function addMonthsUTC(dt, months) {
-      const y = dt.getUTCFullYear();
-      const m = dt.getUTCMonth();
-      const d = dt.getUTCDate();
-      // set to 1st to prevent month overflow issues, then clamp day
-      const tmp = new Date(Date.UTC(y, m + months, 1));
-      const lastDay = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth()+1, 0)).getUTCDate();
-      const day = Math.min(d, lastDay);
-      return new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), day));
-    }
+  <div class="box">
+    <h3>Results</h3>
+    <div id="out" class="mono">—</div>
 
-    // ACT/365 Fixed: YearFrac = actual days / 365
-    function actualDays(d1, d2) {
-      // many conventions treat start included, end excluded
-      const msPerDay = 24*60*60*1000;
-      return Math.round((d2 - d1) / msPerDay);
-    }
-    function yearFracAct365F(d1, d2) {
-      return actualDays(d1, d2) / 365.0;
-    }
+    <h4 style="margin-top:16px;">Cashflows (after settlement)</h4>
+    <div id="cfs" class="mono muted">—</div>
+  </div>
+</div>
 
-    function buildCouponSchedule(issue, maturity, freq) {
-      const stepMonths = Math.round(12 / freq);
-      // build backwards from maturity to issue
-      let dates = [];
-      let cur = maturity;
-      dates.unshift(cur);
-      while (cur > issue) {
-        cur = addMonthsUTC(cur, -stepMonths);
-        dates.unshift(cur);
-        // safety
-        if (dates.length > 1000) break;
-      }
-      // remove anything strictly before issue (keep the first >= issue for prev coupon logic)
-      // (you can customize if your bond has first coupon after issue)
-      return dates;
-    }
+<script>
+// ---------- FORMATTERS (VND) ----------
+const vndInt = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+  maximumFractionDigits: 0
+});
 
-    function findPrevNextCoupon(schedule, settle) {
-      let prev = null, next = null;
-      for (let i=0; i<schedule.length; i++) {
-        const d = schedule[i];
-        if (d <= settle) prev = d;
-        if (d > settle) { next = d; break; }
-      }
-      return { prev, next };
-    }
+const vnd6 = new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+  minimumFractionDigits: 6,
+  maximumFractionDigits: 6
+});
 
-    function priceBondAct365F({
-      fv, couponRate, ytm, freq, issue, settle, maturity
-    }) {
-      if (!(issue < maturity)) throw new Error("Issue date must be before maturity.");
-      if (!(settle < maturity)) throw new Error("Settlement must be before maturity.");
-      if (!(settle >= issue)) {
-        // allow, but accrued interest should be 0
-      }
+// ---------- DATE HELPERS (UTC) ----------
+function parseYMD(ymd) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
 
-      const schedule = buildCouponSchedule(issue, maturity, freq);
-      const { prev: prevCpn, next: nextCpn } = findPrevNextCoupon(schedule, settle);
+function formatYMD(dt) {
+  return dt.toISOString().slice(0, 10);
+}
 
-      // Accrued interest under ACT/365F: FV * couponRate * YearFrac(prevCoupon, settle)
-      // (If settle before first coupon/issue => 0)
-      let accrued = 0;
-      if (prevCpn && settle >= prevCpn) {
-        const yfAcc = yearFracAct365F(prevCpn, settle);
-        accrued = fv * (couponRate/100) * yfAcc;
-      }
+function addMonthsUTC(dt, months) {
+  const y = dt.getUTCFullYear();
+  const m = dt.getUTCMonth();
+  const d = dt.getUTCDate();
+  const tmp = new Date(Date.UTC(y, m + months, 1));
+  const lastDay = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), Math.min(d, lastDay)));
+}
 
-      // PV of cashflows after settlement (dirty price)
-      let dirty = 0;
-      let cfs = [];
+// ---------- ACT / 365F ----------
+function actualDays(d1, d2) {
+  return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
+}
 
-      // discount factor using nominal yield compounded at "freq":
-      // DF(t) = (1 + y/freq)^(-freq * YearFrac(settle, payDate))
-      function df(payDate) {
-        const yf = yearFracAct365F(settle, payDate);
-        const r = (ytm/100) / freq;
-        return Math.pow(1 + r, -freq * yf);
-      }
+function yearFrac(d1, d2) {
+  return actualDays(d1, d2) / 365;
+}
 
-      for (let i=0; i<schedule.length; i++) {
-        const payDate = schedule[i];
-        if (payDate <= settle) continue;
+// ---------- COUPON SCHEDULE ----------
+function buildSchedule(issue, maturity, freq) {
+  const step = 12 / freq;
+  let dates = [];
+  let cur = maturity;
+  dates.unshift(cur);
 
-        const prevDate = schedule[i-1] ?? issue;
-        const yfPeriod = yearFracAct365F(prevDate, payDate);
-        const coupon = fv * (couponRate/100) * yfPeriod; // coupon amount per ACT/365F period
+  while (cur > issue) {
+    cur = addMonthsUTC(cur, -step);
+    dates.unshift(cur);
+    if (dates.length > 500) break;
+  }
+  return dates;
+}
 
-        let cf = coupon;
-        if (+payDate === +maturity) cf += fv;
+function findPrevNext(schedule, settle) {
+  let prev = null, next = null;
+  for (let d of schedule) {
+    if (d <= settle) prev = d;
+    if (d > settle && !next) next = d;
+  }
+  return { prev, next };
+}
 
-        const pv = cf * df(payDate);
-        dirty += pv;
+// ---------- PRICING ----------
+function priceBond({ fv, coupon, ytm, freq, issue, settle, maturity }) {
+  const schedule = buildSchedule(issue, maturity, freq);
+  const { prev, next } = findPrevNext(schedule, settle);
 
-        cfs.push({ date: formatYMD(payDate), yfPeriod, coupon, cf, pv });
-      }
+  let accrued = 0;
+  if (prev && settle >= prev) {
+    accrued = fv * (coupon / 100) * yearFrac(prev, settle);
+  }
 
-      const clean = dirty - accrued;
+  let dirty = 0;
+  let cfs = [];
 
-      return { dirty, clean, accrued, schedule, prevCpn, nextCpn, cfs };
-    }
+  function df(payDate) {
+    const yf = yearFrac(settle, payDate);
+    const r = (ytm / 100) / freq;
+    return Math.pow(1 + r, -freq * yf);
+  }
 
-    function fmt(n) { return Number(n).toFixed(6); }
+  for (let i = 0; i < schedule.length; i++) {
+    const payDate = schedule[i];
+    if (payDate <= settle) continue;
 
-    function recalc() {
-      try {
-        const fv = Number(document.getElementById("fv").value);
-        const c  = Number(document.getElementById("c").value);
-        const y  = Number(document.getElementById("y").value);
-        const freq = Number(document.getElementById("freq").value);
+    const prevDate = schedule[i - 1] ?? issue;
+    const yf = yearFrac(prevDate, payDate);
+    let cf = fv * (coupon / 100) * yf;
 
-        const issue = parseYMD(document.getElementById("issue").value);
-        const settle = parseYMD(document.getElementById("settle").value);
-        const maturity = parseYMD(document.getElementById("mat").value);
+    if (+payDate === +maturity) cf += fv;
 
-        const r = priceBondAct365F({ fv, couponRate: c, ytm: y, freq, issue, settle, maturity });
+    const pv = cf * df(payDate);
+    dirty += pv;
 
-        const out =
-`Prev coupon: ${r.prevCpn ? formatYMD(r.prevCpn) : "—"}
-Next coupon: ${r.nextCpn ? formatYMD(r.nextCpn) : "—"}
+    cfs.push({ date: formatYMD(payDate), yf, cf, pv });
+  }
 
-Accrued interest: ${fmt(Math.round(r.accrued))}
-Dirty price:      ${fmt(Math.round(r.dirty))}
-Clean price:      ${fmt(Math.round(r.clean))}`;
+  return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
+}
 
-        document.getElementById("out").textContent = out;
+// ---------- RECALC ----------
+function recalc() {
+  const fv = +fvEl.value;
+  const c = +cEl.value;
+  const y = +yEl.value;
+  const freq = +freqEl.value;
+  const issue = parseYMD(issueEl.value);
+  const settle = parseYMD(settleEl.value);
+  const maturity = parseYMD(matEl.value);
 
-        const rows = r.cfs.slice(0, 12).map(x =>
-          `${x.date} | yfPeriod=${x.yfPeriod.toFixed(6)} | CF=${fmt(x.cf)} | PV=${fmt(x.pv)}`
-        );
-        document.getElementById("cfs").textContent =
-          rows.length ? rows.join("\n") : "— (no cashflows)";
-      } catch (e) {
-        document.getElementById("out").textContent = "Error: " + e.message;
-        document.getElementById("cfs").textContent = "—";
-      }
-    }
+  const r = priceBond({ fv, coupon: c, ytm: y, freq, issue, settle, maturity });
 
-    document.querySelectorAll("input,select").forEach(el => el.addEventListener("input", recalc));
-    recalc();
-  </script>
+  out.textContent =
+`Prev coupon: ${r.prev ? formatYMD(r.prev) : "—"}
+Next coupon: ${r.next ? formatYMD(r.next) : "—"}
+Accrued interest: ${vndInt.format(r.accrued)}
+Dirty price: ${vndInt.format(r.dirty)}
+Clean price: ${vndInt.format(r.clean)}`;
+
+  cfs.textContent = r.cfs.length
+    ? r.cfs.map(x =>
+        `${x.date} | yf=${x.yf.toFixed(6)} | CF=${vnd6.format(x.cf)} | PV=${vnd6.format(x.pv)}`
+      ).join("\n")
+    : "—";
+}
+
+// ---------- DOM ----------
+const fvEl = document.getElementById("fv");
+const cEl = document.getElementById("c");
+const yEl = document.getElementById("y");
+const freqEl = document.getElementById("freq");
+const issueEl = document.getElementById("issue");
+const settleEl = document.getElementById("settle");
+const matEl = document.getElementById("mat");
+const out = document.getElementById("out");
+const cfs = document.getElementById("cfs");
+
+document.querySelectorAll("input, select").forEach(el =>
+  el.addEventListener("input", recalc)
+);
+
+recalc();
+</script>
 </body>
 </html>
