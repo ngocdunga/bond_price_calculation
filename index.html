@@ -135,8 +135,11 @@ function parseDateVN(str) {
   return null;
 }
 
-function formatISO(dt) {
-  return dt.toISOString().slice(0, 10);
+function formatDateVN(dt) {
+  const d = String(dt.getUTCDate()).padStart(2, "0");
+  const m = String(dt.getUTCMonth() + 1).padStart(2, "0");
+  const y = dt.getUTCFullYear();
+  return `${d}/${m}/${y}`;
 }
 
 // ================= DATE MATH =================
@@ -216,7 +219,7 @@ function priceBond({ fv, coupon, ytm, freq, issue, settle, maturity }) {
     const pv = cf * df(payDate);
     dirty += pv;
 
-    cfs.push({ date: formatISO(payDate), yf, cf, pv });
+    cfs.push({ date: formatDateVN(payDate), yf, cf, pv });
   }
 
   return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
@@ -244,8 +247,8 @@ function recalc() {
   const r = priceBond({ fv, coupon: c, ytm: y, freq, issue, settle, maturity });
 
   out.textContent =
-`Prev coupon: ${r.prev ? formatISO(r.prev) : "—"}
-Next coupon: ${r.next ? formatISO(r.next) : "—"}
+`Prev coupon: ${r.prev ? formatDateVN(r.prev) : "—"}
+Next coupon: ${r.next ? formatDateVN(r.next) : "—"}
 Accrued interest: ${vndInt.format(r.accrued)}
 Dirty price: ${vndInt.format(r.dirty)}
 Clean price: ${vndInt.format(r.clean)}`;
