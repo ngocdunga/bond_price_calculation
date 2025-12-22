@@ -35,10 +35,6 @@ input, select {
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
 .muted {
   color: #666;
   font-size: 13px;
@@ -56,7 +52,6 @@ table {
 
     <label>Face value (VND)</label>
     <input id="fv" type="text" value="1.000.000.000" inputmode="numeric" />
-
 
     <label>Coupon rate (% / year)</label>
     <input id="c" type="number" value="10" step="0.01" />
@@ -92,13 +87,16 @@ table {
 </div>
 
 <script>
-// ---------- FORMATTERS (VND) ----------
+// ================= FORMATTERS =================
+
+// VND – no decimals
 const vndInt = new Intl.NumberFormat("vi-VN", {
   style: "currency",
   currency: "VND",
   maximumFractionDigits: 0
 });
 
+// VND – 6 decimals
 const vnd6 = new Intl.NumberFormat("vi-VN", {
   style: "currency",
   currency: "VND",
@@ -106,7 +104,21 @@ const vnd6 = new Intl.NumberFormat("vi-VN", {
   maximumFractionDigits: 6
 });
 
-// ---------- DATE HELPERS (UTC) ----------
+// ================= INPUT FORMAT =================
+
+// Format: 1.234.567
+function formatVNDInput(value) {
+  const digits = value.replace(/\D/g, "");
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+// Parse VN / US formats safely
+function parseVNDInput(value) {
+  return Number(value.replace(/[.,]/g, ""));
+}
+
+// ================= DATE HELPERS =================
+
 function parseYMD(ymd) {
   const [y, m, d] = ymd.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d));
@@ -125,7 +137,8 @@ function addMonthsUTC(dt, months) {
   return new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), Math.min(d, lastDay)));
 }
 
-// ---------- ACT / 365F ----------
+// ================= ACT / 365F =================
+
 function actualDays(d1, d2) {
   return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
 }
@@ -134,7 +147,8 @@ function yearFrac(d1, d2) {
   return actualDays(d1, d2) / 365;
 }
 
-// ---------- COUPON SCHEDULE ----------
+// ================= SCHEDULE =================
+
 function buildSchedule(issue, maturity, freq) {
   const step = 12 / freq;
   let dates = [];
@@ -158,7 +172,8 @@ function findPrevNext(schedule, settle) {
   return { prev, next };
 }
 
-// ---------- PRICING ----------
+// ================= PRICING =================
+
 function priceBond({ fv, coupon, ytm, freq, issue, settle, maturity }) {
   const schedule = buildSchedule(issue, maturity, freq);
   const { prev, next } = findPrevNext(schedule, settle);
@@ -196,9 +211,12 @@ function priceBond({ fv, coupon, ytm, freq, issue, settle, maturity }) {
   return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
 }
 
-// ---------- RECALC ----------
+// ================= RECALC =================
+
 function recalc() {
-  const fv = +fvEl.value;
+  const fv = parseVNDInput(fvEl.value);
+  if (!fv) return;
+
   const c = +cEl.value;
   const y = +yEl.value;
   const freq = +freqEl.value;
@@ -222,7 +240,8 @@ Clean price: ${vndInt.format(r.clean)}`;
     : "—";
 }
 
-// ---------- DOM ----------
+// ================= DOM =================
+
 const fvEl = document.getElementById("fv");
 const cEl = document.getElementById("c");
 const yEl = document.getElementById("y");
@@ -232,6 +251,18 @@ const settleEl = document.getElementById("settle");
 const matEl = document.getElementById("mat");
 const out = document.getElementById("out");
 const cfs = document.getElementById("cfs");
+
+// Auto-format Face Value while typing
+fvEl.addEventListener("input", () => {
+  const pos = fvEl.selectionStart;
+  const before = fvEl.value;
+
+  fvEl.value = formatVNDInput(before);
+  const diff = fvEl.value.length - before.length;
+
+  fvEl.setSelectionRange(pos + diff, pos + diff);
+  recalc();
+});
 
 document.querySelectorAll("input, select").forEach(el =>
   el.addEventListener("input", recalc)
