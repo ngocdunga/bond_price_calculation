@@ -255,7 +255,7 @@ Clean price: ${vndInt.format(r.clean)}`;
 
   cfs.textContent = r.cfs.length
     ? r.cfs.map(x =>
-        `${x.date} | yf=${x.yf.toFixed(6)} | CF=${vnd6.format(x.cf)} | PV=${vnd6.format(x.pv)}`
+        `${x.date} | CF=${vnd6.format(x.cf)} | PV=${vnd6.format(x.pv)}`
       ).join("\n")
     : "—";
 }
