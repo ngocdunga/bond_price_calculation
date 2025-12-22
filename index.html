@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -67,14 +67,14 @@ input, select {
       <option value="12">Monthly</option>
     </select>
 
-    <label>Issue date</label>
-    <input id="issue" type="date" value="2026-01-05" />
+    <label>Issue date (DD/MM/YYYY)</label>
+    <input id="issue" type="text" value="05/01/2026" />
 
-    <label>Settlement date</label>
-    <input id="settle" type="date" value="2026-04-01" />
+    <label>Settlement date (DD/MM/YYYY)</label>
+    <input id="settle" type="text" value="01/04/2026" />
 
-    <label>Maturity date</label>
-    <input id="mat" type="date" value="2029-01-05" />
+    <label>Maturity date (DD/MM/YYYY)</label>
+    <input id="mat" type="text" value="05/01/2029" />
   </div>
 
   <div class="box">
@@ -104,40 +104,51 @@ const vnd6 = new Intl.NumberFormat("vi-VN", {
   maximumFractionDigits: 6
 });
 
-// ================= INPUT FORMAT =================
+// ================= FACE VALUE INPUT =================
 
-// Format: 1.234.567
 function formatVNDInput(value) {
   const digits = value.replace(/\D/g, "");
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-// Parse VN / US formats safely
 function parseVNDInput(value) {
   return Number(value.replace(/[.,]/g, ""));
 }
 
-// ================= DATE HELPERS =================
+// ================= DATE PARSER (DD/MM/YYYY) =================
 
-function parseYMD(ymd) {
-  const [y, m, d] = ymd.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d));
+function parseDateVN(str) {
+  if (!str) return null;
+
+  // DD/MM/YYYY
+  if (str.includes("/")) {
+    const [d, m, y] = str.split("/").map(Number);
+    return new Date(Date.UTC(y, m - 1, d));
+  }
+
+  // YYYY-MM-DD (fallback)
+  if (str.includes("-")) {
+    const [y, m, d] = str.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d));
+  }
+
+  return null;
 }
 
-function formatYMD(dt) {
+function formatISO(dt) {
   return dt.toISOString().slice(0, 10);
 }
+
+// ================= DATE MATH =================
 
 function addMonthsUTC(dt, months) {
   const y = dt.getUTCFullYear();
   const m = dt.getUTCMonth();
   const d = dt.getUTCDate();
   const tmp = new Date(Date.UTC(y, m + months, 1));
-  const lastDay = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth() + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), Math.min(d, lastDay)));
+  const last = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), Math.min(d, last)));
 }
-
-// ================= ACT / 365F =================
 
 function actualDays(d1, d2) {
   return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
@@ -205,7 +216,7 @@ function priceBond({ fv, coupon, ytm, freq, issue, settle, maturity }) {
     const pv = cf * df(payDate);
     dirty += pv;
 
-    cfs.push({ date: formatYMD(payDate), yf, cf, pv });
+    cfs.push({ date: formatISO(payDate), yf, cf, pv });
   }
 
   return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
@@ -220,15 +231,21 @@ function recalc() {
   const c = +cEl.value;
   const y = +yEl.value;
   const freq = +freqEl.value;
-  const issue = parseYMD(issueEl.value);
-  const settle = parseYMD(settleEl.value);
-  const maturity = parseYMD(matEl.value);
+
+  const issue = parseDateVN(issueEl.value);
+  const settle = parseDateVN(settleEl.value);
+  const maturity = parseDateVN(matEl.value);
+
+  if (!issue || !settle || !maturity) {
+    out.textContent = "Invalid date format (DD/MM/YYYY)";
+    return;
+  }
 
   const r = priceBond({ fv, coupon: c, ytm: y, freq, issue, settle, maturity });
 
   out.textContent =
-`Prev coupon: ${r.prev ? formatYMD(r.prev) : "—"}
-Next coupon: ${r.next ? formatYMD(r.next) : "—"}
+`Prev coupon: ${r.prev ? formatISO(r.prev) : "—"}
+Next coupon: ${r.next ? formatISO(r.next) : "—"}
 Accrued interest: ${vndInt.format(r.accrued)}
 Dirty price: ${vndInt.format(r.dirty)}
 Clean price: ${vndInt.format(r.clean)}`;
@@ -252,14 +269,12 @@ const matEl = document.getElementById("mat");
 const out = document.getElementById("out");
 const cfs = document.getElementById("cfs");
 
-// Auto-format Face Value while typing
+// Auto-format Face Value
 fvEl.addEventListener("input", () => {
   const pos = fvEl.selectionStart;
   const before = fvEl.value;
-
   fvEl.value = formatVNDInput(before);
   const diff = fvEl.value.length - before.length;
-
   fvEl.setSelectionRange(pos + diff, pos + diff);
   recalc();
 });
