@@ -247,10 +247,10 @@ function recalc() {
   const r = priceBond({ fv, coupon: c, ytm: y, freq, issue, settle, maturity });
 
   out.textContent =
-`Prev coupon: ${r.prev ? formatDateVN(r.prev) : "—"}
-Next coupon: ${r.next ? formatDateVN(r.next) : "—"}
-Accrued interest: ${vndInt.format(r.accrued)}
-Dirty price: ${vndInt.format(r.dirty)}
+`Prev coupon: ${r.prev ? formatDateVN(r.prev) : "—"}<br>
+Next coupon: ${r.next ? formatDateVN(r.next) : "—"}<br>
+Accrued interest: ${vndInt.format(r.accrued)}<br>
+Dirty price: ${vndInt.format(r.dirty)}<br>
 Clean price: ${vndInt.format(r.clean)}`;
 
   cfs.textContent = r.cfs.length
