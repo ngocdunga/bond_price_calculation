@@ -44,13 +44,13 @@
       </select>
 
       <label>Issue date (YYYY-MM-DD)</label>
-      <input id="issue" type="date" value="2025-01-01" />
+      <input id="issue" type="date" value="2026-01-05" />
 
       <label>Settlement date (YYYY-MM-DD)</label>
-      <input id="settle" type="date" value="2025-12-22" />
+      <input id="settle" type="date" value="2026-04-01" />
 
       <label>Maturity date (YYYY-MM-DD)</label>
-      <input id="mat" type="date" value="2028-01-01" />
+      <input id="mat" type="date" value="2029-01-05" />
     </div>
 
     <div class="box">
@@ -195,9 +195,9 @@
 `Prev coupon: ${r.prevCpn ? formatYMD(r.prevCpn) : "—"}
 Next coupon: ${r.nextCpn ? formatYMD(r.nextCpn) : "—"}
 
-Accrued interest: ${fmt(r.accrued)}
-Dirty price:      ${fmt(r.dirty)}
-Clean price:      ${fmt(r.clean)}`;
+Accrued interest: ${fmt(Math.round(r.accrued))}
+Dirty price:      ${fmt(Math.round(r.dirty))}
+Clean price:      ${fmt(Math.round(r.clean))}`;
 
         document.getElementById("out").textContent = out;
 
