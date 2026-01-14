@@ -186,7 +186,6 @@ export function priceFloatingBond({
   function df(payDate) {
     const yf = yearFrac(settle, payDate);
     const r = (ytm / 100);
-    console.log('Discounting:', payDate, 'YF:', yf, 'Rate:', r);
     return Math.pow(1 + r, -yf);
   }
 

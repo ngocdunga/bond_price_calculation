@@ -114,30 +114,11 @@
         <label>Face value (VND)</label>
         <input id="fv" type="text" value="100.000.000" inputmode="numeric" />
 
-        <div id="fixedRateInputs">
-          <label>Coupon rate (% / year)</label>
-          <input id="couponRate" type="number" value="10" step="0.01" />
-        </div>
-
         <label>Yield to maturity (% / year)</label>
         <input id="yield" type="number" value="8" step="0.01" />
 
-        <label>Coupon frequency</label>
-        <select id="freq">
-          <option value="1">Annual</option>
-          <option value="2" selected>Semi-annual</option>
-          <option value="4">Quarterly</option>
-          <option value="12">Monthly</option>
-        </select>
-
-        <label>Issue date (DD/MM/YYYY)</label>
-        <input id="issue" type="text" value="05/01/2026" />
-
         <label>Settlement date (DD/MM/YYYY)</label>
         <input id="settle" type="text" />
-
-        <label>Maturity date (DD/MM/YYYY)</label>
-        <input id="mat" type="text" value="05/01/2029" />
       </div>
 
       <div class="box">
@@ -211,7 +192,6 @@
           selectedBond = null;
           bondInfoEl.classList.add("hidden");
           bankRateInfoEl.classList.add("hidden");
-          fixedRateInputsEl.classList.remove("hidden");
           return;
         }
 
@@ -221,16 +201,13 @@
 
         // Update form with bond data
         fvEl.value = formatVNDInput(selectedBond.faceValue.toString());
-        freqEl.value = selectedBond.frequency.toString();
-        issueEl.value = selectedBond.issueDate;
-        matEl.value = selectedBond.maturity;
+
 
         // Show bond info
         let info = `<strong>${selectedBond.code}</strong><br>`;
         info += `Frequency: ${selectedBond.frequency}x per year<br>`;
         info += `Issue: ${selectedBond.issueDate} | Maturity: ${selectedBond.maturity}`;
 
-        fixedRateInputsEl.classList.add("hidden");
         info += `<br><strong>Interest Schedule:</strong><br>`;
         selectedBond.interestSchedule.forEach((s) => {
           info += `Payment ${s.payment}: ADR + ${(s.rate * 100).toFixed(
@@ -273,11 +250,11 @@
         if (!fv) return;
 
         const y = +yEl.value;
-        const freq = +freqEl.value;
+        const freq = selectedBond.frequency;
 
-        const issue = parseDateVN(issueEl.value);
         const settle = parseDateVN(settleEl.value);
-        const maturity = parseDateVN(matEl.value);
+        const issue = parseDateVN(selectedBond.issueDate);
+        const maturity = parseDateVN(selectedBond.maturity);
 
         if (!issue || !settle || !maturity) {
           out.textContent = "Invalid date format (DD/MM/YYYY)";
@@ -362,14 +339,9 @@
       const bondSelectEl = document.getElementById("bondSelect");
       const bondInfoEl = document.getElementById("bondInfo");
       const bankRateInfoEl = document.getElementById("bankRateInfo");
-      const fixedRateInputsEl = document.getElementById("fixedRateInputs");
       const fvEl = document.getElementById("fv");
-      const cEl = document.getElementById("couponRate");
       const yEl = document.getElementById("yield");
-      const freqEl = document.getElementById("freq");
-      const issueEl = document.getElementById("issue");
       const settleEl = document.getElementById("settle");
-      const matEl = document.getElementById("mat");
       const out = document.getElementById("out");
       const cfs = document.getElementById("cfs");
       setTodaySettlement();
