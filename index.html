@@ -134,7 +134,7 @@
         <input id="issue" type="text" value="05/01/2026" />
 
         <label>Settlement date (DD/MM/YYYY)</label>
-        <input id="settle" type="text" value="01/04/2026" />
+        <input id="settle" type="text" />
 
         <label>Maturity date (DD/MM/YYYY)</label>
         <input id="mat" type="text" value="05/01/2029" />
@@ -194,6 +194,14 @@
           option.textContent = `${bond.code}`;
           select.appendChild(option);
         });
+      }
+      function setTodaySettlement() {
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, "0");
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const yyyy = today.getFullYear();
+
+        settleEl.value = `${dd}/${mm}/${yyyy}`;
       }
 
       function onBondSelect() {
@@ -364,6 +372,7 @@
       const matEl = document.getElementById("mat");
       const out = document.getElementById("out");
       const cfs = document.getElementById("cfs");
+      setTodaySettlement();
 
       // Bond selection
       bondSelectEl.addEventListener("change", onBondSelect);
