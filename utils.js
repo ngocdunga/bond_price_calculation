@@ -226,8 +226,8 @@ export function priceFloatingBond({
 
   function df(payDate) {
     const yf = yearFrac(settle, payDate);
-    const r = (ytm / 100) / freq;
-    return Math.pow(1 + r, -freq * yf);
+    const r = (ytm / 100);
+    return Math.pow(1 + r, -yf);
   }
 
   for (let i = 0; i < schedule.length; i++) {
