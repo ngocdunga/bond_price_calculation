@@ -153,46 +153,6 @@ export function calculateAverageBankRate(referenceBank, bankRates) {
   
   return count > 0 ? sum / count : 0;
 }
-
-// ================= PRICING (FIXED RATE) =================
-
-export function priceBond({ fv, coupon, ytm, freq, issue, settle, maturity }) {
-  const schedule = buildSchedule(issue, maturity, freq);
-  const { prev, next } = findPrevNext(schedule, settle);
-
-  let accrued = 0;
-  if (prev && settle >= prev) {
-    accrued = fv * (coupon / 100) * yearFrac(prev, settle);
-  }
-
-  let dirty = 0;
-  let cfs = [];
-
-  function df(payDate) {
-    const yf = yearFrac(settle, payDate);
-    const r = (ytm / 100) / freq;
-    return Math.pow(1 + r, -freq * yf);
-  }
-
-  for (let i = 0; i < schedule.length; i++) {
-    const payDate = schedule[i];
-    if (payDate <= settle) continue;
-
-    const prevDate = schedule[i - 1] ?? issue;
-    const yf = yearFrac(prevDate, payDate);
-    let cf = fv * (coupon / 100) * yf;
-
-    if (+payDate === +maturity) cf += fv;
-
-    const pv = cf * df(payDate);
-    dirty += pv;
-
-    cfs.push({ date: formatDateVN(payDate), yf, cf, pv, rate: coupon / 100 });
-  }
-
-  return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
-}
-
 // ================= PRICING (FLOATING RATE) =================
 
 export function priceFloatingBond({ 
@@ -217,7 +177,6 @@ export function priceFloatingBond({
     if (scheduleRate.floorRate && effectiveRate < scheduleRate.floorRate) {
       effectiveRate = scheduleRate.floorRate;
     }
-
     accrued = fv * effectiveRate * yearFrac(prev, settle);
   }
 
@@ -227,6 +186,7 @@ export function priceFloatingBond({
   function df(payDate) {
     const yf = yearFrac(settle, payDate);
     const r = (ytm / 100);
+    console.log('Discounting:', payDate, 'YF:', yf, 'Rate:', r);
     return Math.pow(1 + r, -yf);
   }
 
