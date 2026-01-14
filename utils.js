@@ -131,11 +131,11 @@ export function getInterestRate(interestSchedule, paymentNum) {
   // Find the rate for this payment number
   for (let i = interestSchedule.length - 1; i >= 0; i--) {
     if (paymentNum >= interestSchedule[i].payment) {
-      return interestSchedule[i].rate;
+      return  interestSchedule[i];
     }
   }
   // Default to first rate if payment number is before first defined payment
-  return interestSchedule[0]?.rate || 0;
+  return interestSchedule[0] || { rate: 0, payment: 0, isFloat: false };
 }
 
 export function calculateAverageBankRate(referenceBank, bankRates) {
@@ -212,7 +212,12 @@ export function priceFloatingBond({
   if (prev && settle >= prev) {
     const paymentNum = getPaymentNumber(schedule, prev);
     const scheduleRate = getInterestRate(interestSchedule, paymentNum);
-    const effectiveRate = scheduleRate + baseBankRate;
+    let effectiveRate = scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
+
+    if (scheduleRate.floorRate && effectiveRate < scheduleRate.floorRate) {
+      effectiveRate = scheduleRate.floorRate;
+    }
+
     accrued = fv * effectiveRate * yearFrac(prev, settle);
   }
 
@@ -235,8 +240,12 @@ export function priceFloatingBond({
     // Get payment number and corresponding rate
     const paymentNum = getPaymentNumber(schedule, payDate);
     const scheduleRate = getInterestRate(interestSchedule, paymentNum);
-    const effectiveRate = scheduleRate + baseBankRate;
-    
+    let effectiveRate = scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
+
+    if (scheduleRate.floorRate && effectiveRate < scheduleRate.floorRate) {
+      effectiveRate = scheduleRate.floorRate;
+    }
+
     let cf = fv * effectiveRate * yf;
     if (+payDate === +maturity) cf += fv;
 
@@ -250,7 +259,7 @@ export function priceFloatingBond({
       pv, 
       rate: effectiveRate,
       paymentNum,
-      scheduleRate,
+      scheduleRate: scheduleRate.rate,
       baseBankRate
     });
   }
