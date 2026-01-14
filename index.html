@@ -1,293 +1,389 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bond Price Calculator (ACT/365F)</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bond Price Calculator (ACT/365F)</title>
 
-<style>
-body {
-  font-family: system-ui;
-  padding: 16px;
-  max-width: 980px;
-  margin: 0 auto;
-}
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.box {
-  padding: 14px;
-  border: 1px solid #ddd;
-  border-radius: 14px;
-}
-label {
-  display: block;
-  margin-top: 10px;
-  font-size: 14px;
-}
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  box-sizing: border-box;
-}
-.mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-}
-.muted {
-  color: #666;
-  font-size: 13px;
-}
-</style>
-</head>
+    <style>
+      body {
+        font-family: system-ui;
+        padding: 16px;
+        max-width: 980px;
+        margin: 0 auto;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .box {
+        padding: 14px;
+        border: 1px solid #ddd;
+        border-radius: 14px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        box-sizing: border-box;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          monospace;
+      }
+      .muted {
+        color: #666;
+        font-size: 13px;
+      }
+      .bond-info {
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .hidden {
+        display: none;
+      }
+      .bank-rate-info {
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 13px;
+      }
 
-<body>
-<h2>Bond Pricing (ACT/365 Fixed)</h2>
-<p class="muted">Day count convention: ACT / 365 Fixed</p>
+      .table th,
+      .table td {
+        border: 1px solid #ddd;
+        padding: 8px 10px;
+        text-align: right;
+      }
 
-<div class="grid">
-  <div class="box">
-    <h3>Inputs</h3>
+      .table th {
+        background: #f0f0f0;
+        font-weight: 600;
+      }
 
-    <label>Face value (VND)</label>
-    <input id="fv" type="text" value="100.000.000" inputmode="numeric" />
+      .table td:first-child,
+      .table th:first-child {
+        text-align: left;
+      }
 
-    <label>Coupon rate (% / year)</label>
-    <input id="c" type="number" value="10" step="0.01" />
+      .table tr:nth-child(even) {
+        background: #fafafa;
+      }
 
-    <label>Yield to maturity (% / year)</label>
-    <input id="y" type="number" value="8" step="0.01" />
+      .table caption {
+        text-align: left;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+    </style>
+  </head>
 
-    <label>Coupon frequency</label>
-    <select id="freq">
-      <option value="1">Annual</option>
-      <option value="2" selected>Semi-annual</option>
-      <option value="4">Quarterly</option>
-      <option value="12">Monthly</option>
-    </select>
+  <body>
+    <h2>Bond Pricing (ACT/365)</h2>
+    <p class="muted">Day count convention: ACT / 365 Fixed</p>
 
-    <label>Issue date (DD/MM/YYYY)</label>
-    <input id="issue" type="text" value="05/01/2026" />
+    <div class="grid">
+      <div class="box">
+        <h3>Inputs</h3>
 
-    <label>Settlement date (DD/MM/YYYY)</label>
-    <input id="settle" type="text" value="01/04/2026" />
+        <label>Select Bond</label>
+        <select id="bondSelect">
+          <option value="">-- Select a bond --</option>
+        </select>
 
-    <label>Maturity date (DD/MM/YYYY)</label>
-    <input id="mat" type="text" value="05/01/2029" />
-  </div>
+        <div id="bondInfo" class="bond-info hidden"></div>
+        <div id="bankRateInfo" class="bank-rate-info hidden"></div>
 
-  <div class="box">
-    <h3>Results</h3>
-    <pre id="out" class="mono">—</pre>
+        <label>Face value (VND)</label>
+        <input id="fv" type="text" value="100.000.000" inputmode="numeric" />
 
-    <h4 style="margin-top:16px;">Cashflows (after settlement)</h4>
-    <div id="cfs" class="mono muted">—</div>
-  </div>
-</div>
+        <div id="fixedRateInputs">
+          <label>Coupon rate (% / year)</label>
+          <input id="couponRate" type="number" value="10" step="0.01" />
+        </div>
 
-<script>
-// ================= FORMATTERS =================
+        <label>Yield to maturity (% / year)</label>
+        <input id="yield" type="number" value="8" step="0.01" />
 
-// VND – no decimals
-const vndInt = new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  maximumFractionDigits: 0
-});
+        <label>Coupon frequency</label>
+        <select id="freq">
+          <option value="1">Annual</option>
+          <option value="2" selected>Semi-annual</option>
+          <option value="4">Quarterly</option>
+          <option value="12">Monthly</option>
+        </select>
 
-// VND – 6 decimals
-const vnd6 = new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  minimumFractionDigits: 6,
-  maximumFractionDigits: 6
-});
+        <label>Issue date (DD/MM/YYYY)</label>
+        <input id="issue" type="text" value="05/01/2026" />
 
-// ================= FACE VALUE INPUT =================
+        <label>Settlement date (DD/MM/YYYY)</label>
+        <input id="settle" type="text" value="01/04/2026" />
 
-function formatVNDInput(value) {
-  const digits = value.replace(/\D/g, "");
-  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
+        <label>Maturity date (DD/MM/YYYY)</label>
+        <input id="mat" type="text" value="05/01/2029" />
+      </div>
 
-function parseVNDInput(value) {
-  return Number(value.replace(/[.,]/g, ""));
-}
+      <div class="box">
+        <h3>Results</h3>
+        <pre id="out" class="mono">—</pre>
 
-// ================= DATE PARSER (DD/MM/YYYY) =================
+        <h4 style="margin-top: 16px">Cashflows (after settlement)</h4>
+        <div id="cfs" class="mono muted">—</div>
+      </div>
+    </div>
 
-function parseDateVN(str) {
-  if (!str) return null;
+    <script type="module">
+      import {
+        vndInt,
+        vnd6,
+        formatVNDInput,
+        parseVNDInput,
+        parseDateVN,
+        formatDateVN,
+        priceBond,
+        priceFloatingBond,
+        calculateAverageBankRate,
+      } from "./utils.js";
 
-  // DD/MM/YYYY
-  if (str.includes("/")) {
-    const [d, m, y] = str.split("/").map(Number);
-    return new Date(Date.UTC(y, m - 1, d));
-  }
+      // ================= DATA LOADING =================
 
-  // YYYY-MM-DD (fallback)
-  if (str.includes("-")) {
-    const [y, m, d] = str.split("-").map(Number);
-    return new Date(Date.UTC(y, m - 1, d));
-  }
+      let bondsData = null;
+      let bankRatesData = null;
+      let selectedBond = null;
 
-  return null;
-}
+      async function loadData() {
+        try {
+          const [bondsResponse, bankRatesResponse] = await Promise.all([
+            fetch("./bonds.json"),
+            fetch("./bankRates.json"),
+          ]);
 
-function formatDateVN(dt) {
-  const d = String(dt.getUTCDate()).padStart(2, "0");
-  const m = String(dt.getUTCMonth() + 1).padStart(2, "0");
-  const y = dt.getUTCFullYear();
-  return `${d}/${m}/${y}`;
-}
+          bondsData = await bondsResponse.json();
+          bankRatesData = await bankRatesResponse.json();
 
-// ================= DATE MATH =================
+          populateBondSelect();
+        } catch (error) {
+          console.error("Error loading data:", error);
+          document.getElementById("out").textContent =
+            "Error loading bond data. Please check JSON files.";
+        }
+      }
 
-function addMonthsUTC(dt, months) {
-  const y = dt.getUTCFullYear();
-  const m = dt.getUTCMonth();
-  const d = dt.getUTCDate();
-  const tmp = new Date(Date.UTC(y, m + months, 1));
-  const last = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth() + 1, 0)).getUTCDate();
-  return new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), Math.min(d, last)));
-}
+      function populateBondSelect() {
+        const select = document.getElementById("bondSelect");
 
-function actualDays(d1, d2) {
-  return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
-}
+        bondsData.bonds.forEach((bond) => {
+          const option = document.createElement("option");
+          option.value = bond.code;
+          option.textContent = `${bond.code}`;
+          select.appendChild(option);
+        });
+      }
 
-function yearFrac(d1, d2) {
-  return actualDays(d1, d2) / 365;
-}
+      function onBondSelect() {
+        const bondCode = bondSelectEl.value;
 
-// ================= SCHEDULE =================
+        if (!bondCode) {
+          selectedBond = null;
+          bondInfoEl.classList.add("hidden");
+          bankRateInfoEl.classList.add("hidden");
+          fixedRateInputsEl.classList.remove("hidden");
+          return;
+        }
 
-function buildSchedule(issue, maturity, freq) {
-  const step = 12 / freq;
-  let dates = [];
-  let cur = maturity;
-  dates.unshift(cur);
+        selectedBond = bondsData.bonds.find((b) => b.code === bondCode);
 
-  while (cur > issue) {
-    cur = addMonthsUTC(cur, -step);
-    dates.unshift(cur);
-    if (dates.length > 500) break;
-  }
-  return dates;
-}
+        if (!selectedBond) return;
 
-function findPrevNext(schedule, settle) {
-  let prev = null, next = null;
-  for (let d of schedule) {
-    if (d <= settle) prev = d;
-    if (d > settle && !next) next = d;
-  }
-  return { prev, next };
-}
+        // Update form with bond data
+        fvEl.value = formatVNDInput(selectedBond.faceValue.toString());
+        freqEl.value = selectedBond.frequency.toString();
+        issueEl.value = selectedBond.issueDate;
+        matEl.value = selectedBond.maturity;
 
-// ================= PRICING =================
+        // Show bond info
+        let info = `<strong>${selectedBond.code}</strong><br>`;
+        info += `Frequency: ${selectedBond.frequency}x per year<br>`;
+        info += `Issue: ${selectedBond.issueDate} | Maturity: ${selectedBond.maturity}`;
 
-function priceBond({ fv, coupon, ytm, freq, issue, settle, maturity }) {
-  const schedule = buildSchedule(issue, maturity, freq);
-  const { prev, next } = findPrevNext(schedule, settle);
+        fixedRateInputsEl.classList.add("hidden");
+        info += `<br><strong>Interest Schedule:</strong><br>`;
+        selectedBond.interestSchedule.forEach((s) => {
+          info += `Payment ${s.payment}: ADR + ${(s.rate * 100).toFixed(
+            2
+          )}%<br>`;
+        });
 
-  let accrued = 0;
-  if (prev && settle >= prev) {
-    accrued = fv * (coupon / 100) * yearFrac(prev, settle);
-  }
+        // Show bank rate info
+        const avgRate = calculateAverageBankRate(
+          selectedBond.referenceBank,
+          bankRatesData.rates
+        );
+        let bankInfo = `<strong>Reference Banks:</strong> ${selectedBond.referenceBank.join(
+          ", "
+        )}<br>`;
+        bankInfo += `<strong>Average Deposit Rate (ADR):</strong> ${(
+          avgRate * 100
+        ).toFixed(3)}%<br>`;
+        bankInfo += `<strong>Individual Rates:</strong><br>`;
+        selectedBond.referenceBank.forEach((bank) => {
+          bankInfo += `${bank}: ${(bankRatesData.rates[bank] * 100).toFixed(
+            2
+          )}%<br>`;
+        });
+        bankInfo += `<small>Last updated: ${bankRatesData.lastUpdated}</small>`;
 
-  let dirty = 0;
-  let cfs = [];
+        bankRateInfoEl.innerHTML = bankInfo;
+        bankRateInfoEl.classList.remove("hidden");
 
-  function df(payDate) {
-    const yf = yearFrac(settle, payDate);
-    const r = (ytm / 100) / freq;
-    return Math.pow(1 + r, -freq * yf);
-  }
+        bondInfoEl.innerHTML = info;
+        bondInfoEl.classList.remove("hidden");
 
-  for (let i = 0; i < schedule.length; i++) {
-    const payDate = schedule[i];
-    if (payDate <= settle) continue;
+        recalc();
+      }
 
-    const prevDate = schedule[i - 1] ?? issue;
-    const yf = yearFrac(prevDate, payDate);
-    let cf = fv * (coupon / 100) * yf;
+      // ================= RECALC =================
 
-    if (+payDate === +maturity) cf += fv;
+      function recalc() {
+        const fv = parseVNDInput(fvEl.value);
+        if (!fv) return;
 
-    const pv = cf * df(payDate);
-    dirty += pv;
+        const y = +yEl.value;
+        const freq = +freqEl.value;
 
-    cfs.push({ date: formatDateVN(payDate), yf, cf, pv });
-  }
+        const issue = parseDateVN(issueEl.value);
+        const settle = parseDateVN(settleEl.value);
+        const maturity = parseDateVN(matEl.value);
 
-  return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
-}
+        if (!issue || !settle || !maturity) {
+          out.textContent = "Invalid date format (DD/MM/YYYY)";
+          return;
+        }
 
-// ================= RECALC =================
+        let r;
 
-function recalc() {
-  const fv = parseVNDInput(fvEl.value);
-  if (!fv) return;
+        // Floating rate bond
+        const baseBankRate = calculateAverageBankRate(
+          selectedBond.referenceBank,
+          bankRatesData.rates
+        );
 
-  const c = +cEl.value;
-  const y = +yEl.value;
-  const freq = +freqEl.value;
+        r = priceFloatingBond({
+          fv,
+          ytm: y,
+          freq,
+          issue,
+          settle,
+          maturity,
+          interestSchedule: selectedBond.interestSchedule,
+          baseBankRate,
+        });
+        cfs.innerHTML = r.cfs.length
+          ? `
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>#</th>
+        <th>Rate</th>
+        <th>Cash Flow</th>
+        <th>PV</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${r.cfs
+        .map(
+          (x) => `
+        <tr>
+          <td>${x.date}</td>
+          <td>${x.paymentNum}</td>
+          <td> ${(x.rate * 100).toFixed(3)}%</td>
+          <td>${vnd6.format(x.cf)}</td>
+          <td>${vnd6.format(x.pv)}</td>
+        </tr>
+      `
+        )
+        .join("")}
+    </tbody>
+  </table>
+  `
+          : "—";
+        out.innerHTML = `
+<table class="table">
+  <tbody>
+    <tr>
+      <th>Prev coupon</th>
+      <td>${r.prev ? formatDateVN(r.prev) : "—"}</td>
+    </tr>
+    <tr>
+      <th>Next coupon</th>
+      <td>${r.next ? formatDateVN(r.next) : "—"}</td>
+    </tr>
+    <tr>
+      <th>Accrued interest</th>
+      <td>${vndInt.format(r.accrued)}</td>
+    </tr>
+    <tr>
+      <th>Dirty price</th>
+      <td><strong>${vndInt.format(r.dirty)}</strong></td>
+    </tr>
+  </tbody>
+</table>
+`;
+      }
 
-  const issue = parseDateVN(issueEl.value);
-  const settle = parseDateVN(settleEl.value);
-  const maturity = parseDateVN(matEl.value);
+      // ================= DOM =================
 
-  if (!issue || !settle || !maturity) {
-    out.textContent = "Invalid date format (DD/MM/YYYY)";
-    return;
-  }
+      const bondSelectEl = document.getElementById("bondSelect");
+      const bondInfoEl = document.getElementById("bondInfo");
+      const bankRateInfoEl = document.getElementById("bankRateInfo");
+      const fixedRateInputsEl = document.getElementById("fixedRateInputs");
+      const fvEl = document.getElementById("fv");
+      const cEl = document.getElementById("couponRate");
+      const yEl = document.getElementById("yield");
+      const freqEl = document.getElementById("freq");
+      const issueEl = document.getElementById("issue");
+      const settleEl = document.getElementById("settle");
+      const matEl = document.getElementById("mat");
+      const out = document.getElementById("out");
+      const cfs = document.getElementById("cfs");
 
-  const r = priceBond({ fv, coupon: c, ytm: y, freq, issue, settle, maturity });
+      // Bond selection
+      bondSelectEl.addEventListener("change", onBondSelect);
 
-  out.textContent =
-`Prev coupon: ${r.prev ? formatDateVN(r.prev) : "—"}
-Next coupon: ${r.next ? formatDateVN(r.next) : "—"}
-Accrued interest: ${vndInt.format(r.accrued)}
-Dirty price: ${vndInt.format(r.dirty)}
-Clean price: ${vndInt.format(r.clean)}`;
+      // Auto-format Face Value
+      fvEl.addEventListener("input", () => {
+        const pos = fvEl.selectionStart;
+        const before = fvEl.value;
+        fvEl.value = formatVNDInput(before);
+        const diff = fvEl.value.length - before.length;
+        fvEl.setSelectionRange(pos + diff, pos + diff);
+        recalc();
+      });
 
-  cfs.textContent = r.cfs.length
-    ? r.cfs.map(x =>
-        `${x.date} | CF=${vnd6.format(x.cf)} | PV=${vnd6.format(x.pv)}`
-      ).join("\n")
-    : "—";
-}
+      document
+        .querySelectorAll("input:not(#bondSelect), select:not(#bondSelect)")
+        .forEach((el) => el.addEventListener("input", recalc));
 
-// ================= DOM =================
-
-const fvEl = document.getElementById("fv");
-const cEl = document.getElementById("c");
-const yEl = document.getElementById("y");
-const freqEl = document.getElementById("freq");
-const issueEl = document.getElementById("issue");
-const settleEl = document.getElementById("settle");
-const matEl = document.getElementById("mat");
-const out = document.getElementById("out");
-const cfs = document.getElementById("cfs");
-
-// Auto-format Face Value
-fvEl.addEventListener("input", () => {
-  const pos = fvEl.selectionStart;
-  const before = fvEl.value;
-  fvEl.value = formatVNDInput(before);
-  const diff = fvEl.value.length - before.length;
-  fvEl.setSelectionRange(pos + diff, pos + diff);
-  recalc();
-});
-
-document.querySelectorAll("input, select").forEach(el =>
-  el.addEventListener("input", recalc)
-);
-
-recalc();
-</script>
-</body>
+      // Load data on page load
+      loadData();
+    </script>
+  </body>
 </html>

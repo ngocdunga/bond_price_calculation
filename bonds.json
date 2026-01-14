@@ -1,0 +1,44 @@
+{
+  "bonds": [
+    {
+      "code": "ASG12501",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.095, "isFloat": false },
+        { "payment": 2, "rate": 0.10, "isFloat": false },
+        { "payment": 3, "rate": 0.10, "isFloat": false },
+        { "payment": 4, "rate": 0.10, "isFloat": false },
+        { "payment": 5, "rate": 0.11, "isFloat": false }
+      ],
+      "issueDate": "05/01/2026",
+      "maturity": "05/01/2029",
+      "frequency": 2,
+      "faceValue": 100000000,
+      "referenceBank": ["VCB", "TCB"]
+    },
+    {
+      "code": "FIX12502",
+      "interestSchedule": [{
+        "payment": 1,
+        "rate": 0.10,
+        "isFloat": false
+      }],
+      "issueDate": "01/02/2026",
+      "maturity": "01/02/2029",
+      "frequency": 2,
+      "faceValue": 100000000,
+      "referenceBank": []
+    },
+    {
+      "code": "ASG12503",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.015, "isFloat": true },
+        { "payment": 3, "rate": 0.015, "isFloat": true }
+      ],
+      "issueDate": "10/10/2025",
+      "maturity": "15/03/2028",
+      "frequency": 4,
+      "faceValue": 100000000,
+      "referenceBank": ["VCB", "BID", "CTG"]
+    }
+  ]
+}
