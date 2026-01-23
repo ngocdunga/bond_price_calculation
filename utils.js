@@ -153,6 +153,7 @@ export function calculateAverageBankRate(referenceBank, bankRates) {
   
   return count > 0 ? sum / count : 0;
 }
+
 // ================= PRICING (FLOATING RATE) =================
 
 export function priceFloatingBond({ 
@@ -224,4 +225,121 @@ export function priceFloatingBond({
   }
 
   return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
+}
+
+// ================= YTM CALCULATION (NEWTON-RAPHSON) =================
+
+export function calculateYTM({
+  fv,
+  targetPrice,
+  freq,
+  issue,
+  settle,
+  maturity,
+  interestSchedule,
+  baseBankRate,
+  initialGuess = 8, // Initial YTM guess in %
+  tolerance = 0.0001, // Price difference tolerance in VND
+  maxIterations = 100
+}) {
+  let ytm = initialGuess;
+  let iteration = 0;
+  let priceDiff = Infinity;
+
+  while (iteration < maxIterations && Math.abs(priceDiff) > tolerance) {
+    // Calculate price at current YTM
+    const result = priceFloatingBond({
+      fv,
+      ytm,
+      freq,
+      issue,
+      settle,
+      maturity,
+      interestSchedule,
+      baseBankRate
+    });
+
+    priceDiff = result.dirty - targetPrice;
+
+    // If close enough, return
+    if (Math.abs(priceDiff) <= tolerance) {
+      return {
+        success: true,
+        ytm,
+        iterations: iteration,
+        precision: Math.abs(priceDiff),
+        bondData: result
+      };
+    }
+
+    // Calculate derivative (numerical approximation)
+    const delta = 0.001; // Small change in YTM for derivative
+    const resultUp = priceFloatingBond({
+      fv,
+      ytm: ytm + delta,
+      freq,
+      issue,
+      settle,
+      maturity,
+      interestSchedule,
+      baseBankRate
+    });
+
+    const derivative = (resultUp.dirty - result.dirty) / delta;
+
+    // Prevent division by zero
+    if (Math.abs(derivative) < 1e-10) {
+      return {
+        success: false,
+        message: `Convergence failed: derivative too small at iteration ${iteration}`,
+        ytm,
+        iterations: iteration
+      };
+    }
+
+    // Newton-Raphson update
+    const ytmNew = ytm - priceDiff / derivative;
+
+    // Prevent unrealistic YTM values
+    if (ytmNew < -50 || ytmNew > 100) {
+      return {
+        success: false,
+        message: `YTM out of reasonable range (${ytmNew.toFixed(2)}%) at iteration ${iteration}`,
+        ytm,
+        iterations: iteration
+      };
+    }
+
+    ytm = ytmNew;
+    iteration++;
+  }
+
+  if (iteration >= maxIterations) {
+    return {
+      success: false,
+      message: `Maximum iterations (${maxIterations}) reached. Last price difference: ${vndInt.format(Math.abs(priceDiff))}`,
+      ytm,
+      iterations: iteration
+    };
+  }
+
+  // Final calculation with converged YTM
+  const finalResult = priceFloatingBond({
+    fv,
+    ytm,
+    freq,
+    issue,
+    settle,
+    maturity,
+    interestSchedule,
+    baseBankRate
+  });
+
+  return {
+    success: true,
+    ytm,
+    iterations: iteration,
+    precision: Math.abs(finalResult.dirty - targetPrice),
+    bondData: finalResult
+  };
 }
