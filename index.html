@@ -88,6 +88,23 @@
         margin-top: 10px;
         font-size: 13px;
       }
+      .recording-warning {
+        background: #ffebee;
+        border: 2px solid #f44336;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #c62828;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .recording-warning::before {
+        content: "⚠️";
+        font-size: 20px;
+      }
       .table {
         width: 100%;
         border-collapse: collapse;
@@ -110,6 +127,13 @@
       }
       .table tr:nth-child(even) {
         background: #fafafa;
+      }
+      .table tr.skipped-row {
+        background: #fff3cd;
+      }
+      .table tr.skipped-row td {
+        color: #856404;
+        font-style: italic;
       }
       .table caption {
         text-align: left;
@@ -157,6 +181,7 @@
 
           <div id="bondInfo" class="bond-info hidden"></div>
           <div id="bankRateInfo" class="bank-rate-info hidden"></div>
+          <div id="recordingWarning" class="recording-warning hidden"></div>
 
           <label>Face value (VND)</label>
           <input id="fv" type="text" value="100.000.000" inputmode="numeric" />
@@ -191,6 +216,7 @@
 
           <div id="bondInfoYTM" class="bond-info hidden"></div>
           <div id="bankRateInfoYTM" class="bank-rate-info hidden"></div>
+          <div id="recordingWarningYTM" class="recording-warning hidden"></div>
 
           <label>Face value (VND)</label>
           <input id="fvYTM" type="text" value="100.000.000" inputmode="numeric" />
@@ -289,6 +315,7 @@
           selectedBond = null;
           bondInfoEl.classList.add("hidden");
           bankRateInfoEl.classList.add("hidden");
+          recordingWarningEl.classList.add("hidden");
           return;
         }
 
@@ -299,7 +326,8 @@
 
         let info = `<strong>${selectedBond.code}</strong><br>`;
         info += `Frequency: ${selectedBond.frequency}x per year<br>`;
-        info += `Issue: ${selectedBond.issueDate} | Maturity: ${selectedBond.maturity}`;
+        info += `Issue: ${selectedBond.issueDate} | Maturity: ${selectedBond.maturity}<br>`;
+        info += `Recording Period: ${selectedBond.recordDays || 10} working days`;
         info += `<br><strong>Interest Schedule:</strong><br>`;
         selectedBond.interestSchedule.forEach((s) => {
           info += `Payment ${s.payment}: ADR + ${(s.rate * 100).toFixed(2)}%<br>`;
@@ -344,6 +372,8 @@
           bankRatesData.rates
         );
 
+        const recordingDays = selectedBond.recordDays || 10;
+
         const r = priceFloatingBond({
           fv,
           ytm: y,
@@ -353,7 +383,19 @@
           maturity,
           interestSchedule: selectedBond.interestSchedule,
           baseBankRate,
+          recordingDays
         });
+
+        // Show recording period warning
+        if (r.inRecordingPeriod) {
+          recordingWarningEl.innerHTML = `
+            RECORDING PERIOD ALERT: Settlement date is within the recording period for upcoming coupon payment on ${formatDateVN(r.upcomingCouponDate)}. 
+            Recording started on ${formatDateVN(r.recordingStartDate)}. This coupon will be excluded from the bond price.
+          `;
+          recordingWarningEl.classList.remove("hidden");
+        } else {
+          recordingWarningEl.classList.add("hidden");
+        }
 
         cfs.innerHTML = r.cfs.length
           ? `
@@ -369,12 +411,12 @@
     </thead>
     <tbody>
       ${r.cfs.map((x) => `
-        <tr>
-          <td>${x.date}</td>
+        <tr${x.skipped ? ' class="skipped-row"' : ''}>
+          <td>${x.date}${x.skipped ? ' (SKIPPED)' : ''}</td>
           <td>${x.paymentNum}</td>
-          <td>${(x.rate * 100).toFixed(3)}%</td>
-          <td>${vnd6.format(x.cf)}</td>
-          <td>${vnd6.format(x.pv)}</td>
+          <td>${x.skipped ? '—' : (x.rate * 100).toFixed(3) + '%'}</td>
+          <td>${x.skipped ? '—' : vnd6.format(x.cf)}</td>
+          <td>${x.skipped ? '—' : vnd6.format(x.pv)}</td>
         </tr>
       `).join("")}
     </tbody>
@@ -414,6 +456,7 @@
           selectedBondYTM = null;
           bondInfoYTMEl.classList.add("hidden");
           bankRateInfoYTMEl.classList.add("hidden");
+          recordingWarningYTMEl.classList.add("hidden");
           return;
         }
 
@@ -424,7 +467,8 @@
 
         let info = `<strong>${selectedBondYTM.code}</strong><br>`;
         info += `Frequency: ${selectedBondYTM.frequency}x per year<br>`;
-        info += `Issue: ${selectedBondYTM.issueDate} | Maturity: ${selectedBondYTM.maturity}`;
+        info += `Issue: ${selectedBondYTM.issueDate} | Maturity: ${selectedBondYTM.maturity}<br>`;
+        info += `Recording Period: ${selectedBondYTM.recordDays || 10} working days`;
         info += `<br><strong>Interest Schedule:</strong><br>`;
         selectedBondYTM.interestSchedule.forEach((s) => {
           info += `Payment ${s.payment}: ADR + ${(s.rate * 100).toFixed(2)}%<br>`;
@@ -470,6 +514,8 @@
           bankRatesData.rates
         );
 
+        const recordingDays = selectedBondYTM.recordDays || 10;
+
         ytmStatusEl.innerHTML = '<div class="muted">Calculating YTM...</div>';
         ytmStatusEl.classList.remove("hidden");
 
@@ -482,12 +528,24 @@
           maturity,
           interestSchedule: selectedBondYTM.interestSchedule,
           baseBankRate,
+          recordingDays
         });
 
         if (result.success) {
           ytmStatusEl.innerHTML = `<div class="success">✓ Converged in ${result.iterations} iterations (precision: ${result.precision.toExponential(2)})</div>`;
           
           const r = result.bondData;
+
+          // Show recording period warning
+          if (r.inRecordingPeriod) {
+            recordingWarningYTMEl.innerHTML = `
+              RECORDING PERIOD ALERT: Settlement date is within the recording period for upcoming coupon payment on ${formatDateVN(r.upcomingCouponDate)}. 
+              Recording started on ${formatDateVN(r.recordingStartDate)}. This coupon has been excluded from the bond price calculation.
+            `;
+            recordingWarningYTMEl.classList.remove("hidden");
+          } else {
+            recordingWarningYTMEl.classList.add("hidden");
+          }
           
           cfsYTM.innerHTML = r.cfs.length
             ? `
@@ -503,12 +561,12 @@
     </thead>
     <tbody>
       ${r.cfs.map((x) => `
-        <tr>
-          <td>${x.date}</td>
+        <tr${x.skipped ? ' class="skipped-row"' : ''}>
+          <td>${x.date}${x.skipped ? ' (SKIPPED)' : ''}</td>
           <td>${x.paymentNum}</td>
-          <td>${(x.rate * 100).toFixed(3)}%</td>
-          <td>${vnd6.format(x.cf)}</td>
-          <td>${vnd6.format(x.pv)}</td>
+          <td>${x.skipped ? '—' : (x.rate * 100).toFixed(3) + '%'}</td>
+          <td>${x.skipped ? '—' : vnd6.format(x.cf)}</td>
+          <td>${x.skipped ? '—' : vnd6.format(x.pv)}</td>
         </tr>
       `).join("")}
     </tbody>
@@ -554,6 +612,7 @@
           ytmStatusEl.innerHTML = `<div class="warning">⚠ ${result.message}</div>`;
           outYTM.textContent = "Unable to calculate YTM. Please check inputs.";
           cfsYTM.innerHTML = "—";
+          recordingWarningYTMEl.classList.add("hidden");
         }
       }
 
@@ -577,6 +636,7 @@
       const bondSelectEl = document.getElementById("bondSelect");
       const bondInfoEl = document.getElementById("bondInfo");
       const bankRateInfoEl = document.getElementById("bankRateInfo");
+      const recordingWarningEl = document.getElementById("recordingWarning");
       const fvEl = document.getElementById("fv");
       const yEl = document.getElementById("yield");
       const settleEl = document.getElementById("settle");
@@ -586,6 +646,7 @@
       const bondSelectYTMEl = document.getElementById("bondSelectYTM");
       const bondInfoYTMEl = document.getElementById("bondInfoYTM");
       const bankRateInfoYTMEl = document.getElementById("bankRateInfoYTM");
+      const recordingWarningYTMEl = document.getElementById("recordingWarningYTM");
       const fvYTMEl = document.getElementById("fvYTM");
       const priceEl = document.getElementById("price");
       const settleYTMEl = document.getElementById("settleYTM");

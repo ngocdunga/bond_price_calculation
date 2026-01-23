@@ -74,12 +74,34 @@ function addMonthsUTC(dt, months) {
   return result;
 }
 
+function subtractWorkingDays(dt, days) {
+  let result = new Date(dt);
+  let remaining = days;
+  
+  while (remaining > 0) {
+    result = new Date(Date.UTC(result.getUTCFullYear(), result.getUTCMonth(), result.getUTCDate() - 1));
+    const dayOfWeek = result.getUTCDay();
+    // Only count weekdays (Monday-Friday)
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      remaining--;
+    }
+  }
+  
+  return result;
+}
+
 function actualDays(d1, d2) {
   return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
 }
 
 function yearFrac(d1, d2) {
   return actualDays(d1, d2) / 365;
+}
+
+// Check if settlement date is in recording period
+export function isInRecordingPeriod(settleDate, couponDate, recordingDays = 10) {
+  const recordingStart = subtractWorkingDays(couponDate, recordingDays);
+  return settleDate >= recordingStart && settleDate < couponDate;
 }
 
 // ================= SCHEDULE =================
@@ -164,13 +186,28 @@ export function priceFloatingBond({
   settle, 
   maturity, 
   interestSchedule,
-  baseBankRate 
+  baseBankRate,
+  recordingDays = 10
 }) {
   const schedule = buildSchedule(issue, maturity, freq);
   const { prev, next } = findPrevNext(schedule, settle);
 
   let accrued = 0;
-  if (prev && settle >= prev) {
+  let inRecordingPeriod = false;
+  let upcomingCouponDate = null;
+  let recordingStartDate = null;
+  
+  // Check if we're in recording period for the next coupon
+  if (next) {
+    inRecordingPeriod = isInRecordingPeriod(settle, next, recordingDays);
+    if (inRecordingPeriod) {
+      upcomingCouponDate = next;
+      recordingStartDate = subtractWorkingDays(next, recordingDays);
+    }
+  }
+  
+  // If in recording period, don't calculate accrued interest
+  if (!inRecordingPeriod && prev && settle >= prev) {
     const paymentNum = getPaymentNumber(schedule, prev);
     const scheduleRate = getInterestRate(interestSchedule, paymentNum);
     let effectiveRate = scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
@@ -193,6 +230,23 @@ export function priceFloatingBond({
   for (let i = 0; i < schedule.length; i++) {
     const payDate = schedule[i];
     if (payDate <= settle) continue;
+    
+    // Skip the next coupon if we're in its recording period
+    if (inRecordingPeriod && +payDate === +next) {
+      cfs.push({ 
+        date: formatDateVN(payDate), 
+        yf: 0, 
+        cf: 0, 
+        pv: 0, 
+        rate: 0,
+        paymentNum: getPaymentNumber(schedule, payDate),
+        scheduleRate: 0,
+        baseBankRate,
+        skipped: true,
+        reason: 'In recording period'
+      });
+      continue;
+    }
 
     const prevDate = schedule[i - 1] ?? issue;
     const yf = yearFrac(prevDate, payDate);
@@ -220,11 +274,22 @@ export function priceFloatingBond({
       rate: effectiveRate,
       paymentNum,
       scheduleRate: scheduleRate.rate,
-      baseBankRate
+      baseBankRate,
+      skipped: false
     });
   }
 
-  return { dirty, clean: dirty - accrued, accrued, prev, next, cfs };
+  return { 
+    dirty, 
+    clean: dirty - accrued, 
+    accrued, 
+    prev, 
+    next, 
+    cfs,
+    inRecordingPeriod,
+    upcomingCouponDate,
+    recordingStartDate
+  };
 }
 
 // ================= YTM CALCULATION (NEWTON-RAPHSON) =================
@@ -238,6 +303,7 @@ export function calculateYTM({
   maturity,
   interestSchedule,
   baseBankRate,
+  recordingDays = 10,
   initialGuess = 8, // Initial YTM guess in %
   tolerance = 0.0001, // Price difference tolerance in VND
   maxIterations = 100
@@ -256,7 +322,8 @@ export function calculateYTM({
       settle,
       maturity,
       interestSchedule,
-      baseBankRate
+      baseBankRate,
+      recordingDays
     });
 
     priceDiff = result.dirty - targetPrice;
@@ -282,7 +349,8 @@ export function calculateYTM({
       settle,
       maturity,
       interestSchedule,
-      baseBankRate
+      baseBankRate,
+      recordingDays
     });
 
     const derivative = (resultUp.dirty - result.dirty) / delta;
@@ -332,7 +400,8 @@ export function calculateYTM({
     settle,
     maturity,
     interestSchedule,
-    baseBankRate
+    baseBankRate,
+    recordingDays
   });
 
   return {
