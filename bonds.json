@@ -72,6 +72,64 @@
       "referenceBank": ["ARG", "VCB", "BID", "CTG"]
     },
     {
+      "code": "NLG12501",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.11, "isFloat": false },
+        {"payment": 3, "rate": 0.98, "isFloat": false}
+      ],
+      "issueDate": "05/06/2025",
+      "maturity": "05/06/2028",
+      "frequency": 2,
+      "faceValue": 100000000,
+      "referenceBank": []
+    },
+    {
+      "code": "BCM12403",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.105, "isFloat": false },
+        {"payment": 2, "rate": 0.04, "isFloat": true, "floorRate": 0.1}
+      ],
+      "issueDate": "08/08/2024",
+      "maturity": "08/08/2027",
+      "frequency": 2,
+      "faceValue": 1000000000,
+      "referenceBank": ["VCB", "BID", "CTG", "ARG"]
+    },
+    {
+      "code": "KBC12401",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.105, "isFloat": false }
+      ],
+      "issueDate": "28/08/2024",
+      "maturity": "28/08/2026",
+      "frequency": 2,
+      "faceValue": 1000000000,
+      "referenceBank": []
+    },
+    {
+      "code": "TNG124017",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.1, "isFloat": false }
+      ],
+      "issueDate": "16/05/2022",
+      "maturity": "16/05/2026",
+      "frequency": 4,
+      "faceValue": 100000,
+      "referenceBank": []
+    },
+    {
+      "code": "SHB124017",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.07675, "isFloat": false },
+        { "payment": 2, "rate": 0.03, "isFloat": true }
+      ],
+      "issueDate": "28/07/2022",
+      "maturity": "28/07/2027",
+      "frequency": 2,
+      "faceValue": 100000,
+      "referenceBank": ["ARG", "VCB", "BID", "CTG"]
+    },
+    {
       "code": "SHB125010",
       "interestSchedule": [
         { "payment": 1, "rate": 0.07675, "isFloat": false },
@@ -82,6 +140,54 @@
       "frequency": 2,
       "faceValue": 100000,
       "referenceBank": ["ARG", "VCB", "BID", "CTG"]
+    },
+        {
+      "code": "LPB125006",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.07675, "isFloat": false },
+        {"payment": 2, "rate": 0.029, "isFloat": true}
+      ],
+      "issueDate": "05/03/2025",
+      "maturity": "05/03/2027",
+      "frequency": 1,
+      "faceValue": 100000,
+      "referenceBank": ["ARG", "VCB", "BID", "CTG"]
+    },
+            {
+      "code": "CII425021",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.1, "isFloat": false },
+        {"payment": 5, "rate": 0.035, "isFloat": true}
+      ],
+      "issueDate": "18/08/2025",
+      "maturity": "18/08/2035",
+      "frequency": 4,
+      "faceValue": 100000,
+      "referenceBank": ["VCB"]
+    },
+    {
+      "code": "SGR12501",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.107, "isFloat": false },
+        { "payment": 5, "rate": 0.105, "isFloat": false },
+        { "payment": 9, "rate": 0.103, "isFloat": false }
+      ],
+      "issueDate": "30/12/2025",
+      "maturity": "30/12/2028",
+      "frequency": 4,
+      "faceValue": 100000000,
+      "referenceBank": []
+    },
+    {
+      "code": "VLH12501",
+      "interestSchedule": [
+        { "payment": 1, "rate": 0.105, "isFloat": false }
+      ],
+      "issueDate": "30/12/2025",
+      "maturity": "30/12/2027",
+      "frequency": 2,
+      "faceValue": 100000000,
+      "referenceBank": []
     }
   ]
 }
