@@ -7,6 +7,7 @@
       ],
       "issueDate": "15/05/2025",
       "maturity": "15/05/2028",
+      "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": []
@@ -20,6 +21,7 @@
       }],
       "issueDate": "04/07/2023",
       "maturity": "04/07/2026",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": []
@@ -31,6 +33,7 @@
       ],
       "issueDate": "30/10/2023",
       "maturity": "30/10/2026",
+            "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000000,
       "referenceBank": []
@@ -43,6 +46,7 @@
       ],
       "issueDate": "26/06/2023",
       "maturity": "26/06/2027",
+            "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000000,
       "referenceBank": ["ARG", "VCB", "BID", "CTG", "MBB"]
@@ -55,6 +59,7 @@
       ],
       "issueDate": "29/03/2024",
       "maturity": "29/03/2027",
+            "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000,
       "referenceBank": ["ARG", "VCB", "BID", "CTG"]
@@ -67,6 +72,7 @@
       ],
       "issueDate": "17/06/2024",
       "maturity": "17/06/2029",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": ["ARG", "VCB", "BID", "CTG"]
@@ -79,6 +85,7 @@
       ],
       "issueDate": "05/06/2025",
       "maturity": "05/06/2028",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": []
@@ -91,6 +98,7 @@
       ],
       "issueDate": "08/08/2024",
       "maturity": "08/08/2027",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 1000000000,
       "referenceBank": ["VCB", "BID", "CTG", "ARG"]
@@ -102,6 +110,7 @@
       ],
       "issueDate": "28/08/2024",
       "maturity": "28/08/2026",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 1000000000,
       "referenceBank": []
@@ -113,6 +122,7 @@
       ],
       "issueDate": "16/05/2022",
       "maturity": "16/05/2026",
+            "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000,
       "referenceBank": []
@@ -125,6 +135,7 @@
       ],
       "issueDate": "28/07/2022",
       "maturity": "28/07/2027",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000,
       "referenceBank": ["ARG", "VCB", "BID", "CTG"]
@@ -137,6 +148,7 @@
       ],
       "issueDate": "28/02/2025",
       "maturity": "28/02/2027",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000,
       "referenceBank": ["ARG", "VCB", "BID", "CTG"]
@@ -149,6 +161,7 @@
       ],
       "issueDate": "05/03/2025",
       "maturity": "05/03/2027",
+            "recordDays": 10,
       "frequency": 1,
       "faceValue": 100000,
       "referenceBank": ["ARG", "VCB", "BID", "CTG"]
@@ -161,6 +174,7 @@
       ],
       "issueDate": "18/08/2025",
       "maturity": "18/08/2035",
+            "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000,
       "referenceBank": ["VCB"]
@@ -174,6 +188,7 @@
       ],
       "issueDate": "30/12/2025",
       "maturity": "30/12/2028",
+            "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000000,
       "referenceBank": []
@@ -185,6 +200,7 @@
       ],
       "issueDate": "30/12/2025",
       "maturity": "30/12/2027",
+            "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": []
