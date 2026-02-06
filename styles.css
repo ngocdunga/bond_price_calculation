@@ -1,0 +1,196 @@
+body {
+  font-family: system-ui;
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #ddd;
+}
+.tab {
+  padding: 12px 24px;
+  background: #f5f5f5;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.2s;
+}
+.tab:hover {
+  background: #e8e8e8;
+}
+.tab.active {
+  background: #2196f3;
+  color: white;
+}
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.box {
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+}
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+input,
+select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  box-sizing: border-box;
+}
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.muted {
+  color: #666;
+  font-size: 13px;
+}
+.bond-info {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+.hidden {
+  display: none;
+}
+.bank-rate-info {
+  background: #e3f2fd;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+.recording-warning {
+  background: #ffebee;
+  border: 2px solid #f44336;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #c62828;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.recording-warning::before {
+  content: "⚠️";
+  font-size: 20px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 13px;
+}
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 8px 10px;
+  text-align: right;
+}
+.table th {
+  background: #f0f0f0;
+  font-weight: 600;
+}
+.table td:first-child,
+.table th:first-child {
+  text-align: left;
+}
+.table tr:nth-child(even) {
+  background: #fafafa;
+}
+.table tr.skipped-row {
+  background: #fff3cd;
+}
+.table tr.skipped-row td {
+  color: #856404;
+  font-style: italic;
+}
+.table caption {
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.warning {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+.success {
+  background: #d4edda;
+  border: 1px solid #28a745;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+.highlight-yellow {
+  background: #fff9c4;
+  font-weight: 600;
+}
+/* Add to the end of styles.css */
+
+.box h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.table td strong {
+  color: #2196f3;
+}
+
+.table td small.muted {
+  display: block;
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+
+/* Intro tab specific styles */
+#intro-tab .box {
+  padding: 20px;
+}
+
+#intro-tab .table th {
+  text-align: center;
+}
+
+#intro-tab .table td {
+  text-align: center;
+  vertical-align: top;
+  padding: 12px 8px;
+}

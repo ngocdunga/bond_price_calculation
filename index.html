@@ -4,217 +4,56 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Bond Calculator (ACT/365F)</title>
-
-    <style>
-      body {
-        font-family: system-ui;
-        padding: 16px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      .tabs {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
-        border-bottom: 2px solid #ddd;
-      }
-      .tab {
-        padding: 12px 24px;
-        background: #f5f5f5;
-        border: none;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 500;
-        border-radius: 8px 8px 0 0;
-        transition: all 0.2s;
-      }
-      .tab:hover {
-        background: #e8e8e8;
-      }
-      .tab.active {
-        background: #2196f3;
-        color: white;
-      }
-      .tab-content {
-        display: none;
-      }
-      .tab-content.active {
-        display: block;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-      }
-      .box {
-        padding: 14px;
-        border: 1px solid #ddd;
-        border-radius: 14px;
-      }
-      label {
-        display: block;
-        margin-top: 10px;
-        font-size: 14px;
-      }
-      input,
-      select {
-        width: 100%;
-        padding: 10px;
-        margin-top: 6px;
-        box-sizing: border-box;
-      }
-      .mono {
-        font-family:
-          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      }
-      .muted {
-        color: #666;
-        font-size: 13px;
-      }
-      .bond-info {
-        background: #f5f5f5;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 13px;
-      }
-      .hidden {
-        display: none;
-      }
-      .bank-rate-info {
-        background: #e3f2fd;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 13px;
-      }
-      .recording-warning {
-        background: #ffebee;
-        border: 2px solid #f44336;
-        padding: 12px;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 14px;
-        color: #c62828;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .recording-warning::before {
-        content: "⚠️";
-        font-size: 20px;
-      }
-      .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 8px;
-        font-size: 13px;
-      }
-      .table th,
-      .table td {
-        border: 1px solid #ddd;
-        padding: 8px 10px;
-        text-align: right;
-      }
-      .table th {
-        background: #f0f0f0;
-        font-weight: 600;
-      }
-      .table td:first-child,
-      .table th:first-child {
-        text-align: left;
-      }
-      .table tr:nth-child(even) {
-        background: #fafafa;
-      }
-      .table tr.skipped-row {
-        background: #fff3cd;
-      }
-      .table tr.skipped-row td {
-        color: #856404;
-        font-style: italic;
-      }
-      .table caption {
-        text-align: left;
-        font-weight: 600;
-        margin-bottom: 6px;
-      }
-      .warning {
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 13px;
-      }
-      .success {
-        background: #d4edda;
-        border: 1px solid #28a745;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 13px;
-      }
-      .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 10px;
-        cursor: pointer;
-      }
-      .checkbox-label input[type="checkbox"] {
-        width: auto;
-        cursor: pointer;
-      }
-      .highlight-yellow {
-        background: #fff9c4;
-        font-weight: 600;
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
     <h2>Bond Calculator (ACT/365)</h2>
     <p class="muted">Day count convention: ACT / 365 Fixed</p>
 
-    <div class="tabs">
-      <button class="tab active" data-tab="price">
-        Price Calculator (Given YTM)
-      </button>
-      <button class="tab" data-tab="ytm">YTM Calculator (Given Price)</button>
-      <button class="tab" data-tab="transaction">Transaction Calculator</button>
-    </div>
+<div class="tabs">
+  <button class="tab active" data-tab="intro">Introduction</button>
+  <button class="tab" data-tab="price">Price Calculator (Given YTM)</button>
+  <button class="tab" data-tab="ytm">YTM Calculator (Given Price)</button>
+  <button class="tab" data-tab="transaction">Transaction Calculator</button>
+</div>
+
+<!-- INTRODUCTION TAB -->
+<div id="intro-tab" class="tab-content active">
+  <div class="box">
+    <div id="ratesTable"></div>
+  </div>
+  
+  <div class="box" style="margin-top: 16px;">
+    <h3>Bond Offering List</h3>
+    <label>Select Date (DD/MM/YYYY)</label>
+    <input id="offeringDate" type="text" placeholder="DD/MM/YYYY" />
+    <div id="offeringTable" style="margin-top: 16px;"></div>
+  </div>
+</div>
 
     <!-- PRICE CALCULATOR TAB -->
     <div id="price-tab" class="tab-content active">
       <div class="grid">
         <div class="box">
           <h3>Inputs</h3>
-
           <label>Select Bond</label>
           <select id="bondSelect">
             <option value="">-- Select a bond --</option>
           </select>
-
           <div id="bondInfo" class="bond-info hidden"></div>
           <div id="bankRateInfo" class="bank-rate-info hidden"></div>
           <div id="recordingWarning" class="recording-warning hidden"></div>
-
           <label>Face value (VND)</label>
           <input id="fv" type="text" value="100.000.000" inputmode="numeric" />
-
           <label>Yield to maturity (% / year)</label>
           <input id="yield" type="number" value="8" step="0.01" />
-
           <label>Settlement date (DD/MM/YYYY)</label>
           <input id="settle" type="text" />
         </div>
-
         <div class="box">
           <h3>Results</h3>
           <pre id="out" class="mono">—</pre>
-
           <h4 style="margin-top: 16px">Cashflows (after settlement)</h4>
           <div id="cfs" class="mono muted">—</div>
         </div>
@@ -226,42 +65,24 @@
       <div class="grid">
         <div class="box">
           <h3>Inputs</h3>
-
           <label>Select Bond</label>
           <select id="bondSelectYTM">
             <option value="">-- Select a bond --</option>
           </select>
-
           <div id="bondInfoYTM" class="bond-info hidden"></div>
           <div id="bankRateInfoYTM" class="bank-rate-info hidden"></div>
           <div id="recordingWarningYTM" class="recording-warning hidden"></div>
-
           <label>Face value (VND)</label>
-          <input
-            id="fvYTM"
-            type="text"
-            value="100.000.000"
-            inputmode="numeric"
-          />
-
+          <input id="fvYTM" type="text" value="100.000.000" inputmode="numeric" />
           <label>Dirty price (VND)</label>
-          <input
-            id="price"
-            type="text"
-            value="100.000.000"
-            inputmode="numeric"
-          />
-
+          <input id="price" type="text" value="100.000.000" inputmode="numeric" />
           <label>Settlement date (DD/MM/YYYY)</label>
           <input id="settleYTM" type="text" />
-
           <div id="ytmStatus" class="hidden"></div>
         </div>
-
         <div class="box">
           <h3>Results</h3>
           <pre id="outYTM" class="mono">—</pre>
-
           <h4 style="margin-top: 16px">Cashflows (after settlement)</h4>
           <div id="cfsYTM" class="mono muted">—</div>
         </div>
@@ -273,723 +94,75 @@
       <div class="grid">
         <div class="box">
           <h3>Transaction Inputs</h3>
-
           <label>Select Bond</label>
           <select id="bondSelectTx">
             <option value="">-- Select a bond --</option>
           </select>
-
           <div id="bondInfoTx" class="bond-info hidden"></div>
           <div id="bankRateInfoTx" class="bank-rate-info hidden"></div>
           <div id="recordingWarningTx" class="recording-warning hidden"></div>
-
           <label>Number of bonds</label>
           <input id="numBonds" type="number" value="100" step="1" />
-
           <label>Leg 1 - Payment Date (Buying) (DD/MM/YYYY)</label>
           <input id="paymentDateBuying" type="text" />
-
           <label>Leg 1 - Discount Yield (% / year)</label>
           <input id="discountYield" type="number" value="5.5" step="0.01" />
-
           <label>Leg 2 - Expected Payment Date (Selling) (DD/MM/YYYY)</label>
           <input id="paymentDateSelling" type="text" />
-
           <label>Leg 2 - Expected Holding Interest Rate (% / year)</label>
           <input id="holdingRate" type="number" value="4.3" step="0.01" />
-
           <label class="checkbox-label">
             <input id="coverFees" type="checkbox" checked />
             Cover transaction fees and taxes
           </label>
         </div>
-
         <div class="box">
           <h3>Transaction Results</h3>
           <pre id="outTx" class="mono">—</pre>
-
           <h4 style="margin-top: 16px">Profit Calculation</h4>
           <div id="profitTx" class="mono muted">—</div>
         </div>
       </div>
     </div>
 
-    <script type="module">
-      import {
-        vndInt,
-        vnd6,
-        formatVNDInput,
-        parseVNDInput,
-        parseDateVN,
-        formatDateVN,
-        priceFloatingBond,
-        calculateAverageBankRate,
-        calculateYTM,
-        calculateTransaction,
-      } from "./utils.js";
+<script type="module">
+  import { loadData, populateBondSelect, setTodaySettlement } from "./js/dataLoader.js";
+  import { initIntroTab } from "./js/introTab.js";
+  import { initPriceTab } from "./js/priceTab.js";
+  import { initYTMTab } from "./js/ytmTab.js";
+  import { initTransactionTab } from "./js/transactionTab.js";
 
-      // ================= DATA LOADING =================
-      let bondsData = null;
-      let bankRatesData = null;
-      let selectedBond = null;
-      let selectedBondYTM = null;
-      let selectedBondTx = null;
-
-      async function loadData() {
-        try {
-          const [bondsResponse, bankRatesResponse] = await Promise.all([
-            fetch("./bonds.json"),
-            fetch("./bankRates.json"),
-          ]);
-
-          bondsData = await bondsResponse.json();
-          bankRatesData = await bankRatesResponse.json();
-
-          populateBondSelect();
-          populateBondSelectYTM();
-          populateBondSelectTx();
-        } catch (error) {
-          console.error("Error loading data:", error);
-          document.getElementById("out").textContent =
-            "Error loading bond data. Please check JSON files.";
-        }
-      }
-
-      function populateBondSelect() {
-        const select = document.getElementById("bondSelect");
-        bondsData.bonds.forEach((bond) => {
-          const option = document.createElement("option");
-          option.value = bond.code;
-          option.textContent = `${bond.code}`;
-          select.appendChild(option);
-        });
-      }
-
-      function populateBondSelectYTM() {
-        const select = document.getElementById("bondSelectYTM");
-        bondsData.bonds.forEach((bond) => {
-          const option = document.createElement("option");
-          option.value = bond.code;
-          option.textContent = `${bond.code}`;
-          select.appendChild(option);
-        });
-      }
-
-      function populateBondSelectTx() {
-        const select = document.getElementById("bondSelectTx");
-        bondsData.bonds.forEach((bond) => {
-          const option = document.createElement("option");
-          option.value = bond.code;
-          option.textContent = `${bond.code}`;
-          select.appendChild(option);
-        });
-      }
-
-      function setTodaySettlement() {
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, "0");
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const yyyy = today.getFullYear();
-        settleEl.value = `${dd}/${mm}/${yyyy}`;
-        settleYTMEl.value = `${dd}/${mm}/${yyyy}`;
-        paymentDateBuyingEl.value = `${dd}/${mm}/${yyyy}`;
-        paymentDateSellingEl.value = `${dd}/${mm}/${yyyy}`;
-      }
-
-      // ================= PRICE TAB =================
-      function onBondSelect() {
-        const bondCode = bondSelectEl.value;
-
-        if (!bondCode) {
-          selectedBond = null;
-          bondInfoEl.classList.add("hidden");
-          bankRateInfoEl.classList.add("hidden");
-          recordingWarningEl.classList.add("hidden");
-          return;
-        }
-
-        selectedBond = bondsData.bonds.find((b) => b.code === bondCode);
-        if (!selectedBond) return;
-
-        fvEl.value = formatVNDInput(selectedBond.faceValue.toString());
-
-        updateBondInfo(selectedBond, bondInfoEl, bankRateInfoEl);
-        recalc();
-      }
-
-      function updateBondInfo(bond, infoEl, bankInfoEl) {
-        let info = `<strong>${bond.code}</strong><br>`;
-        info += `Frequency: ${bond.frequency}x per year<br>`;
-        info += `Issue: ${bond.issueDate} | Maturity: ${bond.maturity}<br>`;
-        info += `Recording Period: ${bond.recordDays || 10} working days`;
-        info += `<br><strong>Interest Schedule:</strong><br>`;
-        bond.interestSchedule.forEach((s) => {
-          info += `Payment ${s.payment}: ADR + ${(s.rate * 100).toFixed(2)}%<br>`;
-        });
-
-        const avgRate = calculateAverageBankRate(
-          bond.referenceBank,
-          bankRatesData.rates,
-        );
-        let bankInfo = `<strong>Reference Banks:</strong> ${bond.referenceBank.join(", ")}<br>`;
-        bankInfo += `<strong>Average Deposit Rate (ADR):</strong> ${(avgRate * 100).toFixed(3)}%<br>`;
-        bankInfo += `<strong>Individual Rates:</strong><br>`;
-        bond.referenceBank.forEach((bank) => {
-          bankInfo += `${bank}: ${(bankRatesData.rates[bank] * 100).toFixed(2)}%<br>`;
-        });
-        bankInfo += `<small>Last updated: ${bankRatesData.lastUpdated}</small>`;
-
-        bankInfoEl.innerHTML = bankInfo;
-        bankInfoEl.classList.remove("hidden");
-        infoEl.innerHTML = info;
-        infoEl.classList.remove("hidden");
-      }
-
-      function recalc() {
-        if (!selectedBond) return;
-
-        const fv = parseVNDInput(fvEl.value);
-        if (!fv) return;
-
-        const y = +yEl.value;
-        const settle = parseDateVN(settleEl.value);
-        const issue = parseDateVN(selectedBond.issueDate);
-        const maturity = parseDateVN(selectedBond.maturity);
-
-        if (!issue || !settle || !maturity) {
-          out.textContent = "Invalid date format (DD/MM/YYYY)";
-          recordingWarningEl.classList.add("hidden");
-          return;
-        }
-
-        const baseBankRate = calculateAverageBankRate(
-          selectedBond.referenceBank,
-          bankRatesData.rates,
-        );
-
-        const recordingDays = selectedBond.recordDays || 10;
-
-        const r = priceFloatingBond({
-          fv,
-          ytm: y,
-          freq: selectedBond.frequency,
-          issue,
-          settle,
-          maturity,
-          interestSchedule: selectedBond.interestSchedule,
-          baseBankRate,
-          recordingDays,
-        });
-
-        // Show recording period warning
-        if (r.inRecordingPeriod) {
-          recordingWarningEl.innerHTML = `
-            RECORDING PERIOD ALERT: Settlement date is within the recording period for upcoming coupon payment on ${formatDateVN(r.upcomingCouponDate)}. 
-            Recording started on ${formatDateVN(r.recordingStartDate)}. This coupon will be excluded from the bond price.
-          `;
-          recordingWarningEl.classList.remove("hidden");
-        } else {
-          recordingWarningEl.classList.add("hidden");
-        }
-
-        cfs.innerHTML = r.cfs.length
-          ? `
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>#</th>
-        <th>Rate</th>
-        <th>Cash Flow</th>
-        <th>PV</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${r.cfs
-        .map(
-          (x) => `
-        <tr${x.skipped ? ' class="skipped-row"' : ""}>
-          <td>${x.date}${x.skipped ? " (SKIPPED)" : ""}</td>
-          <td>${x.paymentNum}</td>
-          <td>${x.skipped ? "—" : (x.rate * 100).toFixed(3) + "%"}</td>
-          <td>${x.skipped ? "—" : vnd6.format(x.cf)}</td>
-          <td>${x.skipped ? "—" : vnd6.format(x.pv)}</td>
-        </tr>
-      `,
-        )
-        .join("")}
-    </tbody>
-  </table>
-  `
-          : "—";
-
-        out.innerHTML = `
-<table class="table">
-  <tbody>
-    <tr>
-      <th>Prev coupon</th>
-      <td>${r.prev ? formatDateVN(r.prev) : "—"}</td>
-    </tr>
-    <tr>
-      <th>Next coupon</th>
-      <td>${r.next ? formatDateVN(r.next) : "—"}</td>
-    </tr>
-    <tr>
-      <th>Accrued interest</th>
-      <td>${vndInt.format(r.accrued)}</td>
-    </tr>
-    <tr>
-      <th>Dirty price</th>
-      <td><strong>${vndInt.format(r.dirty)}</strong></td>
-    </tr>
-  </tbody>
-</table>
-`;
-      }
-
-      // ================= YTM TAB =================
-      function onBondSelectYTM() {
-        const bondCode = bondSelectYTMEl.value;
-
-        if (!bondCode) {
-          selectedBondYTM = null;
-          bondInfoYTMEl.classList.add("hidden");
-          bankRateInfoYTMEl.classList.add("hidden");
-          recordingWarningYTMEl.classList.add("hidden");
-          return;
-        }
-
-        selectedBondYTM = bondsData.bonds.find((b) => b.code === bondCode);
-        if (!selectedBondYTM) return;
-
-        fvYTMEl.value = formatVNDInput(selectedBondYTM.faceValue.toString());
-
-        updateBondInfo(selectedBondYTM, bondInfoYTMEl, bankRateInfoYTMEl);
-        recalcYTM();
-      }
-
-      function recalcYTM() {
-        if (!selectedBondYTM) return;
-
-        const fv = parseVNDInput(fvYTMEl.value);
-        const targetPrice = parseVNDInput(priceEl.value);
-
-        if (!fv || !targetPrice) return;
-
-        const settle = parseDateVN(settleYTMEl.value);
-        const issue = parseDateVN(selectedBondYTM.issueDate);
-        const maturity = parseDateVN(selectedBondYTM.maturity);
-
-        if (!issue || !settle || !maturity) {
-          outYTM.textContent = "Invalid date format (DD/MM/YYYY)";
-          recordingWarningYTMEl.classList.add("hidden");
-          return;
-        }
-
-        const baseBankRate = calculateAverageBankRate(
-          selectedBondYTM.referenceBank,
-          bankRatesData.rates,
-        );
-
-        const recordingDays = selectedBondYTM.recordDays || 10;
-
-        ytmStatusEl.innerHTML = '<div class="muted">Calculating YTM...</div>';
-        ytmStatusEl.classList.remove("hidden");
-
-        const result = calculateYTM({
-          fv,
-          targetPrice,
-          freq: selectedBondYTM.frequency,
-          issue,
-          settle,
-          maturity,
-          interestSchedule: selectedBondYTM.interestSchedule,
-          baseBankRate,
-          recordingDays,
-        });
-
-        if (result.success) {
-          ytmStatusEl.innerHTML = `<div class="success">✓ Converged in ${result.iterations} iterations (precision: ${result.precision.toExponential(2)})</div>`;
-
-          const r = result.bondData;
-
-          // Show recording period warning
-          if (r.inRecordingPeriod) {
-            recordingWarningYTMEl.innerHTML = `
-              RECORDING PERIOD ALERT: Settlement date is within the recording period for upcoming coupon payment on ${formatDateVN(r.upcomingCouponDate)}. 
-              Recording started on ${formatDateVN(r.recordingStartDate)}. This coupon has been excluded from the bond price calculation.
-            `;
-            recordingWarningYTMEl.classList.remove("hidden");
-          } else {
-            recordingWarningYTMEl.classList.add("hidden");
-          }
-
-          cfsYTM.innerHTML = r.cfs.length
-            ? `
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>#</th>
-        <th>Rate</th>
-        <th>Cash Flow</th>
-        <th>PV</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${r.cfs
-        .map(
-          (x) => `
-        <tr${x.skipped ? ' class="skipped-row"' : ""}>
-          <td>${x.date}${x.skipped ? " (SKIPPED)" : ""}</td>
-          <td>${x.paymentNum}</td>
-          <td>${x.skipped ? "—" : (x.rate * 100).toFixed(3) + "%"}</td>
-          <td>${x.skipped ? "—" : vnd6.format(x.cf)}</td>
-          <td>${x.skipped ? "—" : vnd6.format(x.pv)}</td>
-        </tr>
-      `,
-        )
-        .join("")}
-    </tbody>
-  </table>
-  `
-            : "—";
-
-          outYTM.innerHTML = `
-<table class="table">
-  <tbody>
-    <tr>
-      <th>Yield to Maturity (YTM)</th>
-      <td><strong>${result.ytm.toFixed(4)}%</strong></td>
-    </tr>
-    <tr>
-      <th>Prev coupon</th>
-      <td>${r.prev ? formatDateVN(r.prev) : "—"}</td>
-    </tr>
-    <tr>
-      <th>Next coupon</th>
-      <td>${r.next ? formatDateVN(r.next) : "—"}</td>
-    </tr>
-    <tr>
-      <th>Accrued interest</th>
-      <td>${vndInt.format(r.accrued)}</td>
-    </tr>
-    <tr>
-      <th>Target price</th>
-      <td>${vndInt.format(targetPrice)}</td>
-    </tr>
-    <tr>
-      <th>Calculated price</th>
-      <td>${vndInt.format(r.dirty)}</td>
-    </tr>
-    <tr>
-      <th>Price difference</th>
-      <td>${vndInt.format(Math.abs(r.dirty - targetPrice))}</td>
-    </tr>
-  </tbody>
-</table>
-`;
-        } else {
-          ytmStatusEl.innerHTML = `<div class="warning">⚠ ${result.message}</div>`;
-          outYTM.textContent = "Unable to calculate YTM. Please check inputs.";
-          cfsYTM.innerHTML = "—";
-          recordingWarningYTMEl.classList.add("hidden");
-        }
-      }
-
-// ================= TRANSACTION TAB =================
-function onBondSelectTx() {
-  const bondCode = bondSelectTxEl.value;
-
-  if (!bondCode) {
-    selectedBondTx = null;
-    bondInfoTxEl.classList.add("hidden");
-    bankRateInfoTxEl.classList.add("hidden");
-    recordingWarningTxEl.classList.add("hidden");
-    return;
-  }
-
-  selectedBondTx = bondsData.bonds.find((b) => b.code === bondCode);
-  if (!selectedBondTx) return;
-
-  updateBondInfo(selectedBondTx, bondInfoTxEl, bankRateInfoTxEl);
-  recalcTransaction();
-}
-
-function recalcTransaction() {
-  if (!selectedBondTx) return;
-
-  const numBonds = +numBondsEl.value;
-  const faceValue = selectedBondTx.faceValue;
-
-  const paymentDateBuying = parseDateVN(paymentDateBuyingEl.value);
-  const discountYield = +discountYieldEl.value;
-  
-  const paymentDateSelling = parseDateVN(paymentDateSellingEl.value);
-  const holdingRate = +holdingRateEl.value;
-  
-  const coverFees = coverFeesEl.checked;
-
-  const issue = parseDateVN(selectedBondTx.issueDate);
-  const maturity = parseDateVN(selectedBondTx.maturity);
-
-  if ( !paymentDateBuying || !paymentDateSelling || !issue || !maturity) {
-    outTx.textContent = "Invalid date format (DD/MM/YYYY)";
-    recordingWarningTxEl.classList.add("hidden");
-    return;
-  }
-
-  const baseBankRate = calculateAverageBankRate(
-    selectedBondTx.referenceBank,
-    bankRatesData.rates
-  );
-
-  const recordingDays = selectedBondTx.recordDays || 10;
-
-  const txResult = calculateTransaction({
-    numBonds,
-    faceValue,
-    paymentDateBuying,
-    discountYield,
-    paymentDateSelling,
-    holdingRate,
-    coverFees,
-    freq: selectedBondTx.frequency,
-    issue,
-    maturity,
-    interestSchedule: selectedBondTx.interestSchedule,
-    baseBankRate,
-    recordingDays
+  // Tab switching
+  const tabs = document.querySelectorAll(".tab");
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const tabName = tab.dataset.tab;
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      document.querySelectorAll(".tab-content").forEach((content) => {
+        content.classList.remove("active");
+      });
+      document.getElementById(`${tabName}-tab`).classList.add("active");
+    });
   });
 
-  // Show recording period warnings
-  let warnings = [];
-  if (txResult.leg1.inRecordingPeriod) {
-    warnings.push(`LEG 1: Within recording period for coupon on ${formatDateVN(txResult.leg1.upcomingCouponDate)} (started ${formatDateVN(txResult.leg1.recordingStartDate)})`);
-  }
-  if (txResult.leg2.inRecordingPeriod) {
-    warnings.push(`LEG 2: Within recording period for coupon on ${formatDateVN(txResult.leg2.upcomingCouponDate)} (started ${formatDateVN(txResult.leg2.recordingStartDate)})`);
-  }
-
-  if (warnings.length > 0) {
-    recordingWarningTxEl.innerHTML = warnings.join('<br>');
-    recordingWarningTxEl.classList.remove("hidden");
-  } else {
-    recordingWarningTxEl.classList.add("hidden");
-  }
-
-  // Display results
-outTx.innerHTML = `
-<h4>Leg 1 - Purchasing Information</h4>
-<table class="table">
-  <tbody>
-    <tr>
-      <th>Payment date</th>
-      <td>${formatDateVN(paymentDateBuying)}</td>
-    </tr>
-    <tr>
-      <th>Discount yield</th>
-      <td>${discountYield.toFixed(2)}%</td>
-    </tr>
-    <tr>
-      <th>Purchasing price (per bond)</th>
-      <td class="highlight-yellow">${vndInt.format(txResult.leg1.pricePerBond)}</td>
-    </tr>
-    <tr>
-      <th>Settlement amount (A = P1 * N)</th>
-      <td>${vndInt.format(txResult.leg1.settlementAmount)}</td>
-    </tr>
-    <tr>
-      <th>Transaction fee (0.100%)</th>
-      <td>${vndInt.format(txResult.leg1.transactionFee)}</td>
-    </tr>
-    <tr>
-      <th>Total investment amount (B = A + F)</th>
-      <td class="highlight-yellow"><strong>${vndInt.format(txResult.leg1.totalInvestment)}</strong></td>
-    </tr>
-  </tbody>
-</table>
-
-<h4 style="margin-top: 16px">Leg 2 - Expected Selling Information</h4>
-<table class="table">
-  <tbody>
-    <tr>
-      <th>Expected payment date</th>
-      <td>${formatDateVN(paymentDateSelling)}</td>
-    </tr>
-    <tr>
-      <th>Expected holding rate</th>
-      <td>${holdingRate.toFixed(2)}%</td>
-    </tr>
-    <tr>
-      <th>Target amount</th>
-      <td>${vndInt.format(txResult.profit.targetAmount)}</td>
-    </tr>
-    <tr>
-      <th>Expected selling price (per bond) ${coverFees ? '(adjusted for fees)' : ''}</th>
-      <td class="highlight-yellow">${vndInt.format(txResult.leg2.pricePerBond)}</td>
-    </tr>
-    <tr>
-      <th>Market price (for reference)</th>
-      <td class="muted">${vndInt.format(txResult.leg2.marketPricePerBond)}</td>
-    </tr>
-    <tr>
-      <th>Expected settlement amount (G = P2 * N)</th>
-      <td>${vndInt.format(txResult.leg2.settlementAmount)}</td>
-    </tr>
-    <tr>
-      <th>Expected transaction fee (0.100%)</th>
-      <td>${vndInt.format(txResult.leg2.transactionFee)}</td>
-    </tr>
-    <tr>
-      <th>Expected transfer tax (0.100%)</th>
-      <td>${vndInt.format(txResult.leg2.transferTax)}</td>
-    </tr>
-    <tr>
-      <th>Expected transfer fee</th>
-      <td>${vndInt.format(txResult.leg2.transferFee)}</td>
-    </tr>
-    <tr>
-      <th>Total expected received (H = G ${coverFees ? '- fees' : ''} + coupons)</th>
-      <td class="highlight-yellow"><strong>${vndInt.format(txResult.leg2.totalReceived)}</strong></td>
-    </tr>
-  </tbody>
-</table>
-`;
-
-profitTx.innerHTML = `
-<table class="table">
-  <tbody>
-    <tr>
-      <th>Expected No. days holding (J = D2 - D1)</th>
-      <td>${txResult.profit.daysHolding}</td>
-    </tr>
-    <tr>
-      <th>Expected interest (K = B * R / 365 * J)</th>
-      <td>${vndInt.format(txResult.profit.expectedInterest)}</td>
-    </tr>
-    <tr>
-      <th>Expected coupons received</th>
-      <td>${vndInt.format(txResult.profit.couponsReceived)}</td>
-    </tr>
-    <tr>
-      <th>Coupon tax (5%)</th>
-      <td>${vndInt.format(txResult.profit.couponTax)}</td>
-    </tr>
-    <tr>
-      <th>Net coupons after tax</th>
-      <td>${vndInt.format(txResult.profit.netCoupons)}</td>
-    </tr>
-    <tr>
-      <th>Total profit</th>
-      <td><strong>${vndInt.format(txResult.profit.totalProfit)}</strong></td>
-    </tr>
-    <tr>
-      <th>Annualized holding interest rate (L = K / B * 365 / J)</th>
-      <td><strong>${txResult.profit.holdingInterestRate.toFixed(3)}%</strong></td>
-    </tr>
-  </tbody>
-</table>
-`;
-}
-
-      // ================= TAB SWITCHING =================
-      const tabs = document.querySelectorAll(".tab");
-      tabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-          const tabName = tab.dataset.tab;
-
-          tabs.forEach((t) => t.classList.remove("active"));
-          tab.classList.add("active");
-
-          document.querySelectorAll(".tab-content").forEach((content) => {
-            content.classList.remove("active");
-          });
-          document.getElementById(`${tabName}-tab`).classList.add("active");
-        });
-      });
-
-      // ================= DOM ELEMENTS =================
-      const bondSelectEl = document.getElementById("bondSelect");
-      const bondInfoEl = document.getElementById("bondInfo");
-      const bankRateInfoEl = document.getElementById("bankRateInfo");
-      const recordingWarningEl = document.getElementById("recordingWarning");
-      const fvEl = document.getElementById("fv");
-      const yEl = document.getElementById("yield");
-      const settleEl = document.getElementById("settle");
-      const out = document.getElementById("out");
-      const cfs = document.getElementById("cfs");
-
-      const bondSelectYTMEl = document.getElementById("bondSelectYTM");
-      const bondInfoYTMEl = document.getElementById("bondInfoYTM");
-      const bankRateInfoYTMEl = document.getElementById("bankRateInfoYTM");
-      const recordingWarningYTMEl = document.getElementById(
-        "recordingWarningYTM",
-      );
-      const fvYTMEl = document.getElementById("fvYTM");
-      const priceEl = document.getElementById("price");
-      const settleYTMEl = document.getElementById("settleYTM");
-      const outYTM = document.getElementById("outYTM");
-      const cfsYTM = document.getElementById("cfsYTM");
-      const ytmStatusEl = document.getElementById("ytmStatus");
-
-// ================= DOM ELEMENTS =================
-// ... (previous elements)
-
-const bondSelectTxEl = document.getElementById("bondSelectTx");
-const bondInfoTxEl = document.getElementById("bondInfoTx");
-const bankRateInfoTxEl = document.getElementById("bankRateInfoTx");
-const recordingWarningTxEl = document.getElementById("recordingWarningTx");
-const numBondsEl = document.getElementById("numBonds");
-const paymentDateBuyingEl = document.getElementById("paymentDateBuying");
-const discountYieldEl = document.getElementById("discountYield");
-const paymentDateSellingEl = document.getElementById("paymentDateSelling");
-const holdingRateEl = document.getElementById("holdingRate");
-const coverFeesEl = document.getElementById("coverFees");
-const outTx = document.getElementById("outTx");
-const profitTx = document.getElementById("profitTx");
-
-      setTodaySettlement();
-
-      // Price tab events
-      bondSelectEl.addEventListener("change", onBondSelect);
-      fvEl.addEventListener("input", () => {
-        const pos = fvEl.selectionStart;
-        const before = fvEl.value;
-        fvEl.value = formatVNDInput(before);
-        const diff = fvEl.value.length - before.length;
-        fvEl.setSelectionRange(pos + diff, pos + diff);
-        recalc();
-      });
-      [yEl, settleEl].forEach((el) => el.addEventListener("input", recalc));
-
-      // YTM tab events
-      bondSelectYTMEl.addEventListener("change", onBondSelectYTM);
-      fvYTMEl.addEventListener("input", () => {
-        const pos = fvYTMEl.selectionStart;
-        const before = fvYTMEl.value;
-        fvYTMEl.value = formatVNDInput(before);
-        const diff = fvYTMEl.value.length - before.length;
-        fvYTMEl.setSelectionRange(pos + diff, pos + diff);
-        recalcYTM();
-      });
-      priceEl.addEventListener("input", () => {
-        const pos = priceEl.selectionStart;
-        const before = priceEl.value;
-        priceEl.value = formatVNDInput(before);
-        const diff = priceEl.value.length - before.length;
-        priceEl.setSelectionRange(pos + diff, pos + diff);
-        recalcYTM();
-      });
-      settleYTMEl.addEventListener("input", recalcYTM);
-// Transaction tab events
-bondSelectTxEl.addEventListener("change", onBondSelectTx);
-[numBondsEl, paymentDateBuyingEl, discountYieldEl, paymentDateSellingEl, holdingRateEl, coverFeesEl].forEach((el) => 
-  el.addEventListener("input", recalcTransaction)
-);
-coverFeesEl.addEventListener("change", recalcTransaction);
-
-      loadData();
-    </script>
+  // Initialize app
+  (async () => {
+    try {
+      const { bondsData } = await loadData();
+      populateBondSelect("bondSelect", bondsData.bonds);
+      populateBondSelect("bondSelectYTM", bondsData.bonds);
+      populateBondSelect("bondSelectTx", bondsData.bonds);
+      setTodaySettlement("settle", "settleYTM", "paymentDateBuying", "paymentDateSelling", "offeringDate");
+      
+      initIntroTab();
+      initPriceTab();
+      initYTMTab();
+      initTransactionTab();
+    } catch (error) {
+      document.getElementById("out").textContent = "Error loading bond data. Please check JSON files.";
+    }
+  })();
+</script>
   </body>
 </html>
