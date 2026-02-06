@@ -106,6 +106,8 @@ function getBondsForDuration(duration, selectedDate) {
 
     // Skip if bond has matured
     if (maturity <= startDate) continue;
+    if (maturity < endDate) continue;
+    if (bond.listing == "private") continue;
 
     const schedule = buildSchedule(issue, maturity, bond.frequency);
     const recordingDays = bond.recordDays || 10;

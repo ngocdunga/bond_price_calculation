@@ -9,7 +9,7 @@
           "isFloat": false
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "15/05/2025",
       "maturity": "15/05/2028",
@@ -27,7 +27,7 @@
           "isFloat": false
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "corporate",
       "issueDate": "04/07/2023",
       "maturity": "04/07/2026",
@@ -45,7 +45,7 @@
           "isFloat": false
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "corporate",
       "issueDate": "30/10/2023",
       "maturity": "30/10/2026",
@@ -93,7 +93,7 @@
           "isFloat": true
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "26/06/2023",
       "maturity": "26/06/2027",
@@ -123,7 +123,7 @@
           "floorRate": 0.11
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "corporate",
       "issueDate": "29/03/2024",
       "maturity": "29/03/2027",
@@ -156,7 +156,7 @@
           "isFloat": true
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "17/06/2024",
       "maturity": "17/06/2029",
@@ -184,7 +184,7 @@
           "isFloat": false
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "05/06/2025",
       "maturity": "05/06/2028",
@@ -208,7 +208,7 @@
           "floorRate": 0.1
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "08/08/2024",
       "maturity": "08/08/2027",
@@ -231,7 +231,7 @@
           "isFloat": false
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "28/08/2024",
       "maturity": "28/08/2026",
@@ -264,7 +264,7 @@
           "isFloat": true
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "corporate",
       "issueDate": "25/11/2024",
       "maturity": "25/11/2028",
@@ -292,7 +292,7 @@
           "isFloat": true
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "bank",
       "issueDate": "28/07/2022",
       "maturity": "28/07/2027",
@@ -320,7 +320,7 @@
           "isFloat": true
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "bank",
       "issueDate": "28/02/2025",
       "maturity": "28/02/2027",
@@ -348,7 +348,7 @@
           "isFloat": true
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "bank",
       "issueDate": "05/03/2025",
       "maturity": "05/03/2027",
@@ -376,7 +376,7 @@
           "isFloat": true
         }
       ],
-      "type": "public",
+      "listing": "public",
       "category": "corporate",
       "issueDate": "18/08/2025",
       "maturity": "18/08/2035",
@@ -406,7 +406,7 @@
           "isFloat": false
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "30/12/2025",
       "maturity": "30/12/2028",
@@ -424,7 +424,7 @@
           "isFloat": false
         }
       ],
-      "type": "public",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "05/01/2026",
       "maturity": "05/01/2029",
@@ -442,7 +442,7 @@
           "isFloat": false
         }
       ],
-      "type": "private",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "30/12/2025",
       "maturity": "30/12/2027",
@@ -460,7 +460,7 @@
           "isFloat": false
         }
       ],
-      "type": "public",
+      "listing": "private",
       "category": "corporate",
       "issueDate": "30/01/2026",
       "maturity": "30/01/2029",
