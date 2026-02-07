@@ -3,12 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Bond Calculator (ACT/365F)</title>
+    <title>Investment Banking KIS Vietnam Offerings</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
 
   <body>
-    <h2>Bond Calculator (ACT/365)</h2>
+    <header class="site-header">
+    <img src="kis_logo.png" alt="Company Logo" class="site-logo" />
+    </header>
+    <h2>Investment Banking KIS Vietnam Offerings</h2>
     <p class="muted">Day count convention: ACT / 365 Fixed</p>
 
 <div class="tabs">
@@ -119,11 +122,24 @@
         <div class="box">
           <h3>Transaction Results</h3>
           <pre id="outTx" class="mono">—</pre>
+
           <h4 style="margin-top: 16px">Profit Calculation</h4>
           <div id="profitTx" class="mono muted">—</div>
         </div>
       </div>
+        <div class="box" style="margin-top: 16px;">
+      <h3>Portfolio Value Over Time</h3>
+      <div style="position: relative; height: 400px;">
+        <canvas id="txChart"></canvas>
+      </div>
     </div>
+    </div>
+<!-- 1️⃣ Chart.js FIRST -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<!-- 2️⃣ Date adapter SECOND -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
 
 <script type="module">
   import { loadData, populateBondSelect, setTodaySettlement } from "./js/dataLoader.js";

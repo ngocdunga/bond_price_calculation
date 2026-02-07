@@ -194,3 +194,23 @@ select {
   vertical-align: top;
   padding: 12px 8px;
 }
+.site-header {
+  position: absolute;        /* stays on top when scrolling */
+  top: 20px;
+  right: 100px;
+  z-index: 1000;
+}
+
+.site-logo {
+  height: 100px;           /* adjust size */
+  width: auto;
+}
+
+/* Chart container */
+canvas {
+  max-width: 100%;
+}
+
+.box canvas {
+  background: white;
+}

@@ -442,18 +442,18 @@ export function calculateTransaction({
     recordingDays
   });
 
-  const leg1PricePerBond = Math.round(leg1Bond.dirty);
+  const leg1PricePerBond = leg1Bond.dirty;
   const leg1SettlementAmount = leg1PricePerBond * numBonds;
-  const leg1TransactionFee = Math.round(leg1SettlementAmount * 0.001); // 0.1% on buying
+  const leg1TransactionFee = leg1SettlementAmount * 0.001;
   const leg1TotalInvestment = leg1SettlementAmount + leg1TransactionFee;
 
   // ========== CALCULATE COUPONS RECEIVED ==========
   const schedule = buildSchedule(issue, maturity, freq);
   let couponsReceived = 0;
+  const couponFlows = []; // NEW: Track individual coupon payments
   
   for (let i = 0; i < schedule.length; i++) {
     const couponDate = schedule[i];
-    // Coupon is received if it's paid after buying and before/on selling
     if (couponDate > paymentDateBuying && couponDate <= paymentDateSelling) {
       const prevDate = schedule[i - 1] ?? issue;
       const yf = yearFrac(prevDate, couponDate);
@@ -466,12 +466,23 @@ export function calculateTransaction({
         effectiveRate = scheduleRate.floorRate;
       }
 
-      const couponAmount = faceValue * effectiveRate * yf * numBonds;
-      couponsReceived += couponAmount;
+      const grossCouponAmount = faceValue * effectiveRate * yf * numBonds;
+      const couponTax = grossCouponAmount * 0.05;
+      const netCouponAmount = grossCouponAmount - couponTax;
+      
+      couponsReceived += grossCouponAmount;
+      
+      // NEW: Store coupon flow details
+      couponFlows.push({
+        date: couponDate,
+        grossAmount: grossCouponAmount,
+        tax: couponTax,
+        netAmount: netCouponAmount
+      });
     }
   }
-  couponsReceived = couponsReceived;
-  const couponTax = couponsReceived * 0.05; // 5% tax on coupons
+
+  const couponTax = couponsReceived * 0.05;
   const netCoupons = couponsReceived - couponTax;
 
   // ========== CALCULATE TARGET AMOUNT ==========
@@ -487,41 +498,28 @@ export function calculateTransaction({
   let leg2TotalReceived;
 
   if (coverFees) {
-    // COVER FEES: Solve for x where:
-    // x - x*0.001 - x*0.001 - max(300000, numBonds*0.3) + netCoupons = targetAmount
-    // x * (1 - 0.001 - 0.001) - max(300000, numBonds*0.3) + netCoupons = targetAmount
-    // x * 0.998 = targetAmount - netCoupons + max(300000, numBonds*0.3)
-    
-    const maxTransferFee = Math.min(300000, numBonds * 0.3);
+    const maxTransferFee = Math.max(300000, numBonds * 0.3);
     leg2SettlementAmount = (targetAmount - netCoupons + maxTransferFee) / 0.998;
-    leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
-    leg2SettlementAmount = leg2PricePerBond*numBonds;
-
-    leg2TransactionFee = Math.round(leg2SettlementAmount * 0.001); // 0.1%
-    leg2TransferTax = Math.round(leg2SettlementAmount * 0.001); // 0.1%
+    
+    leg2TransactionFee = leg2SettlementAmount * 0.001;
+    leg2TransferTax = leg2SettlementAmount * 0.001;
     leg2TransferFee = maxTransferFee;
     
     leg2TotalReceived = leg2SettlementAmount - leg2TransactionFee - leg2TransferTax - leg2TransferFee + netCoupons;
-
+    leg2PricePerBond = leg2SettlementAmount / numBonds;
     
   } else {
-    // NOT COVER FEES: Solve for x where:
-    // x + netCoupons = targetAmount
-    // x = targetAmount - netCoupons
-    
     leg2SettlementAmount = targetAmount - netCoupons;
-    leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
-    leg2SettlementAmount = leg2PricePerBond*numBonds;
-
-    leg2TransactionFee = Math.round(leg2SettlementAmount * 0.001); // 0.1%
-    leg2TransferTax = Math.round(leg2SettlementAmount * 0.001); // 0.1%
-    const maxTransferFee = Math.min(300000, numBonds * 0.3);
+    leg2PricePerBond = leg2SettlementAmount / numBonds;
+    
+    leg2TransactionFee = leg2SettlementAmount * 0.001;
+    leg2TransferTax = leg2SettlementAmount * 0.001;
+    const maxTransferFee = Math.max(300000, numBonds * 0.3);
     leg2TransferFee = Math.min(leg2TransactionFee + leg2TransferTax, maxTransferFee);
     
     leg2TotalReceived = leg2SettlementAmount + netCoupons;
   }
 
-  // ========== CALCULATE LEG 2 BOND INFO (for display purposes) ==========
   const leg2Bond = priceFloatingBond({
     fv: faceValue,
     ytm: holdingRate,
@@ -544,7 +542,7 @@ export function calculateTransaction({
     totalProfit = leg2TotalReceived - leg1TotalInvestment - leg2TransferFee;
   }
 
-  const annualizedReturn = Math.round((totalProfit / leg1TotalInvestment) * (365 / daysHolding) * 1000) / 10; // in %
+  const annualizedReturn = (totalProfit / leg1TotalInvestment) * (365 / daysHolding) * 100;
 
   return {
     leg1: {
@@ -552,6 +550,7 @@ export function calculateTransaction({
       settlementAmount: leg1SettlementAmount,
       transactionFee: leg1TransactionFee,
       totalInvestment: leg1TotalInvestment,
+      paymentDate: paymentDateBuying, // NEW
       inRecordingPeriod: leg1Bond.inRecordingPeriod,
       upcomingCouponDate: leg1Bond.upcomingCouponDate,
       recordingStartDate: leg1Bond.recordingStartDate
@@ -563,7 +562,8 @@ export function calculateTransaction({
       transferTax: leg2TransferTax,
       transferFee: leg2TransferFee,
       totalReceived: leg2TotalReceived,
-      marketPricePerBond: leg2Bond.dirty, // For reference
+      paymentDate: paymentDateSelling, // NEW
+      marketPricePerBond: leg2Bond.dirty,
       inRecordingPeriod: leg2Bond.inRecordingPeriod,
       upcomingCouponDate: leg2Bond.upcomingCouponDate,
       recordingStartDate: leg2Bond.recordingStartDate
@@ -574,6 +574,7 @@ export function calculateTransaction({
       couponsReceived,
       couponTax,
       netCoupons,
+      couponFlows, // NEW: Array of coupon payment details
       totalProfit,
       holdingInterestRate: annualizedReturn,
       targetAmount
