@@ -268,7 +268,7 @@
       "category": "corporate",
       "issueDate": "25/11/2024",
       "maturity": "25/11/2028",
-      "recordDays": 10,
+      "recordDays": 14,
       "frequency": 4,
       "faceValue": 100000,
       "referenceBank": [
