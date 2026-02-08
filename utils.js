@@ -454,7 +454,7 @@ export function calculateTransaction({
   
   for (let i = 0; i < schedule.length; i++) {
     const couponDate = schedule[i];
-    if (couponDate > paymentDateBuying && couponDate <= paymentDateSelling) {
+    if (couponDate > paymentDateBuying && isInRecordingPeriod(paymentDateSelling,couponDate, recordingDays)) {
       const prevDate = schedule[i - 1] ?? issue;
       const yf = yearFrac(prevDate, couponDate);
       
