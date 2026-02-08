@@ -442,7 +442,7 @@ export function calculateTransaction({
     recordingDays
   });
 
-  const leg1PricePerBond = leg1Bond.dirty;
+  const leg1PricePerBond = Math.round(leg1Bond.dirty + 0.5);
   const leg1SettlementAmount = leg1PricePerBond * numBonds;
   const leg1TransactionFee = leg1SettlementAmount * 0.001;
   const leg1TotalInvestment = leg1SettlementAmount + leg1TransactionFee;
@@ -500,7 +500,7 @@ export function calculateTransaction({
   if (coverFees) {
     const transferFee = Math.min(300000, numBonds * 0.3);
     leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / 0.998;
-    leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds - 0.5);
+    leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
     leg2SettlementAmount = leg2PricePerBond*numBonds;
     
     leg2TransactionFee = leg2SettlementAmount * 0.001;
