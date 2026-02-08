@@ -498,15 +498,16 @@ export function calculateTransaction({
   let leg2TotalReceived;
 
   if (coverFees) {
-    const maxTransferFee = Math.max(300000, numBonds * 0.3);
-    leg2SettlementAmount = (targetAmount - netCoupons + maxTransferFee) / 0.998;
+    const transferFee = Math.min(300000, numBonds * 0.3);
+    leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / 0.998;
+    leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds - 0.5);
+    leg2SettlementAmount = leg2PricePerBond*numBonds;
     
     leg2TransactionFee = leg2SettlementAmount * 0.001;
     leg2TransferTax = leg2SettlementAmount * 0.001;
-    leg2TransferFee = maxTransferFee;
+    leg2TransferFee = transferFee;
     
     leg2TotalReceived = leg2SettlementAmount - leg2TransactionFee - leg2TransferTax - leg2TransferFee + netCoupons;
-    leg2PricePerBond = leg2SettlementAmount / numBonds;
     
   } else {
     leg2SettlementAmount = targetAmount - netCoupons;
@@ -514,8 +515,8 @@ export function calculateTransaction({
     
     leg2TransactionFee = leg2SettlementAmount * 0.001;
     leg2TransferTax = leg2SettlementAmount * 0.001;
-    const maxTransferFee = Math.max(300000, numBonds * 0.3);
-    leg2TransferFee = Math.min(leg2TransactionFee + leg2TransferTax, maxTransferFee);
+    
+    leg2TransferFee = Math.min(300000, numBonds * 0.3);
     
     leg2TotalReceived = leg2SettlementAmount + netCoupons;
   }
@@ -539,7 +540,7 @@ export function calculateTransaction({
   if (coverFees) {
     totalProfit = leg2TotalReceived - leg1TotalInvestment;
   } else {
-    totalProfit = leg2TotalReceived - leg1TotalInvestment - leg2TransferFee;
+    totalProfit = leg2TotalReceived - leg1TotalInvestment - leg2TransferFee - leg2TransferTax - leg2TransactionFee;
   }
 
   const annualizedReturn = (totalProfit / leg1TotalInvestment) * (365 / daysHolding) * 100;
