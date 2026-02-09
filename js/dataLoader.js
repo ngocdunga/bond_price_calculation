@@ -1,17 +1,20 @@
 export let bondsData = null;
 export let bankRatesData = null;
+export let vacationDates = null;
 
 export async function loadData() {
   try {
-    const [bondsResponse, bankRatesResponse] = await Promise.all([
+    const [bondsResponse, bankRatesResponse, vacationDatesResponse] = await Promise.all([
       fetch("./bonds.json"),
       fetch("./bankRates.json"),
+      fetch("./vacationdates.json"),
     ]);
 
     bondsData = await bondsResponse.json();
+    vacationDates = await vacationDatesResponse.json();
     bankRatesData = await bankRatesResponse.json();
 
-    return { bondsData, bankRatesData };
+    return { bondsData, bankRatesData, vacationDates };
   } catch (error) {
     console.error("Error loading data:", error);
     throw error;

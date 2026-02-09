@@ -1,5 +1,5 @@
 import { parseDateVN, formatDateVN } from "../utils.js";
-import { bondsData, bankRatesData } from "./dataLoader.js";
+import { bondsData, bankRatesData, vacationDates } from "./dataLoader.js";
 
 // Bond rates offered
 const offeredRates = {
@@ -34,14 +34,33 @@ function addMonths(date, months) {
   return result;
 }
 
-function subtractWorkingDays(dt, days) {
+function subtractWorkingDays(dt, days, vacationData) {
   let result = new Date(dt);
   let remaining = days;
 
+  // Build holiday set inside this function
+  const holidaySet = new Set();
+
+  Object.entries(vacationData).forEach(([startStr, info]) => {
+    const startDate = parseDateVN(startStr);
+    const duration = info.Last || 1;
+
+    for (let i = 0; i < duration; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      holidaySet.add(d.toDateString());
+    }
+  });
+
+  // Subtract working days
   while (remaining > 0) {
     result.setDate(result.getDate() - 1);
-    const dayOfWeek = result.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+
+    const day = result.getDay();
+    const isWeekend = (day === 0 || day === 6);
+    const isHoliday = holidaySet.has(result.toDateString());
+
+    if (!isWeekend && !isHoliday) {
       remaining--;
     }
   }
@@ -117,13 +136,19 @@ function getBondsForDuration(duration, selectedDate) {
     for (let couponDate of schedule) {
       // Check if coupon date falls within the period
       if (couponDate > startDate && couponDate <= endDate) {
-        hasCouponInPeriod = true;
-        break;
+        const recordingStartDate = subtractWorkingDays(couponDate, recordingDays, vacationDates);
+        if (startDate > recordingStartDate){
+          hasCouponInPeriod = false;
+          break;
+        } else {
+          hasCouponInPeriod = true;
+          break;
+        }
       }
 
       // Check if end date falls within recording period
       if (couponDate > endDate) {
-        const recordingStartDate = subtractWorkingDays(couponDate, recordingDays);
+        const recordingStartDate = subtractWorkingDays(couponDate, recordingDays, vacationDates);
         if (endDate >= recordingStartDate && endDate < couponDate) {
           hasCouponInPeriod = true;
           break;
