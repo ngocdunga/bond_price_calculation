@@ -388,6 +388,7 @@ export function initTransactionTab() {
       interestSchedule: selectedBondTx.interestSchedule,
       baseBankRate,
       recordingDays,
+      regime: selectedBondTx.regime
     });
 
     let warnings = [];

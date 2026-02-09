@@ -16,7 +16,8 @@
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "WORKING"
     },
     {
       "code": "BAF123020",
@@ -34,7 +35,8 @@
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     },
     {
       "code": "CMX123035",
@@ -52,7 +54,8 @@
       "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     },
     {
       "code": "SBT12301",
@@ -106,7 +109,8 @@
         "BID",
         "CTG",
         "MBB"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "TDP124010",
@@ -135,7 +139,8 @@
         "VCB",
         "BID",
         "CTG"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "NLG12401",
@@ -168,7 +173,8 @@
         "VCB",
         "BID",
         "CTG"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "NLG12501",
@@ -191,7 +197,8 @@
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     },
     {
       "code": "BCM12403",
@@ -220,7 +227,8 @@
         "BID",
         "CTG",
         "ARG"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "KBC12401",
@@ -238,7 +246,8 @@
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 1000000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     },
     {
       "code": "TNG124027",
@@ -276,7 +285,8 @@
         "VCB",
         "BID",
         "CTG"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "SHB125017",
@@ -304,7 +314,8 @@
         "VCB",
         "BID",
         "CTG"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "SHB125010",
@@ -332,7 +343,8 @@
         "VCB",
         "BID",
         "CTG"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "LPB125006",
@@ -360,7 +372,8 @@
         "VCB",
         "BID",
         "CTG"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "CII425021",
@@ -385,7 +398,8 @@
       "faceValue": 100000,
       "referenceBank": [
         "VCB"
-      ]
+      ],
+      "regime": "NORMAL"
     },
     {
       "code": "SGR12501",
@@ -413,7 +427,8 @@
       "recordDays": 10,
       "frequency": 4,
       "faceValue": 100000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     },
     {
       "code": "BAF12502",
@@ -431,7 +446,8 @@
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     },
     {
       "code": "VLH12501",
@@ -449,7 +465,8 @@
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     },
     {
       "code": "CTD12501",
@@ -467,7 +484,8 @@
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000,
-      "referenceBank": []
+      "referenceBank": [],
+      "regime": "NORMAL"
     }
   ]
 }

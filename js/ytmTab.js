@@ -84,6 +84,7 @@ export function initYTMTab() {
       interestSchedule: selectedBondYTM.interestSchedule,
       baseBankRate,
       recordingDays,
+      regime: selectedBondYTM.regime
     });
 
     if (result.success) {

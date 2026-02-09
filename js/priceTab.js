@@ -96,6 +96,7 @@ export function initPriceTab() {
 
     const recordingDays = selectedBond.recordDays || 10;
 
+    console.log("Bond regime:", selectedBond.regime);
     const r = priceFloatingBond({
       fv,
       ytm: y,
@@ -106,6 +107,7 @@ export function initPriceTab() {
       interestSchedule: selectedBond.interestSchedule,
       baseBankRate,
       recordingDays,
+      regime: selectedBond.regime
     });
 
     if (r.inRecordingPeriod) {

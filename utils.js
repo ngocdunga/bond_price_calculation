@@ -1,10 +1,10 @@
+import { vacationDates } from "./js/dataLoader.js";
 // ================= FORMATTERS =================
-
 // VND – no decimals
 export const vndInt = new Intl.NumberFormat("vi-VN", {
   style: "currency",
   currency: "VND",
-  maximumFractionDigits: 0
+  maximumFractionDigits: 0,
 });
 
 // VND – 6 decimals
@@ -12,7 +12,7 @@ export const vnd6 = new Intl.NumberFormat("vi-VN", {
   style: "currency",
   currency: "VND",
   minimumFractionDigits: 6,
-  maximumFractionDigits: 6
+  maximumFractionDigits: 6,
 });
 
 // ================= FACE VALUE INPUT =================
@@ -60,33 +60,47 @@ function addMonthsUTC(dt, months) {
   const m = dt.getUTCMonth();
   const d = dt.getUTCDate();
   const tmp = new Date(Date.UTC(y, m + months, 1));
-  const last = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth() + 1, 0)).getUTCDate();
-  let result = new Date(Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), Math.min(d, last)));
-  
-  // Adjust to next working day (Monday) if Saturday (6) or Sunday (0)
-  const dayOfWeek = result.getUTCDay();
-  if (dayOfWeek === 0) { // Sunday → next Monday
-    result = new Date(Date.UTC(result.getUTCFullYear(), result.getUTCMonth(), result.getUTCDate() + 1));
-  } else if (dayOfWeek === 6) { // Saturday → next Monday  
-    result = new Date(Date.UTC(result.getUTCFullYear(), result.getUTCMonth(), result.getUTCDate() + 2));
-  }
-  
+  const last = new Date(
+    Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  let result = new Date(
+    Date.UTC(tmp.getUTCFullYear(), tmp.getUTCMonth(), Math.min(d, last)),
+  );
+
   return result;
 }
 
-function subtractWorkingDays(dt, days) {
+function subtractWorkingDays(dt, days, vacationData) {
   let result = new Date(dt);
   let remaining = days;
-  
+
+  // Build holiday set inside this function
+  const holidaySet = new Set();
+
+  Object.entries(vacationData).forEach(([startStr, info]) => {
+    const startDate = parseDateVN(startStr);
+    const duration = info.Last || 1;
+
+    for (let i = 0; i < duration; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      holidaySet.add(d.toDateString());
+    }
+  });
+
+  // Subtract working days
   while (remaining > 0) {
-    result = new Date(Date.UTC(result.getUTCFullYear(), result.getUTCMonth(), result.getUTCDate() - 1));
-    const dayOfWeek = result.getUTCDay();
-    // Only count weekdays (Monday-Friday)
-    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+    result.setDate(result.getDate() - 1);
+
+    const day = result.getDay();
+    const isWeekend = day === 0 || day === 6;
+    const isHoliday = holidaySet.has(result.toDateString());
+
+    if (!isWeekend && !isHoliday) {
       remaining--;
     }
   }
-  
+
   return result;
 }
 
@@ -99,14 +113,23 @@ function yearFrac(d1, d2) {
 }
 
 // Check if settlement date is in recording period
-export function isInRecordingPeriod(settleDate, couponDate, recordingDays = 10) {
-  const recordingStart = subtractWorkingDays(couponDate, recordingDays);
+export function isInRecordingPeriod(
+  settleDate,
+  couponDate,
+  recordingDays = 10,
+) {
+  const recordingStart = subtractWorkingDays(
+    couponDate,
+    recordingDays,
+    vacationDates,
+  );
   return settleDate >= recordingStart && settleDate < couponDate;
 }
 
 // ================= SCHEDULE =================
 
-function buildSchedule(issue, maturity, freq) {
+function buildSchedule(issue, maturity, freq, vacationData, regime = "NORMAL") {
+  console.log("Building schedule with regime:", regime);
   const step = 12 / freq;
   let dates = [];
   let cur = new Date(issue); // Start from issue date
@@ -114,7 +137,62 @@ function buildSchedule(issue, maturity, freq) {
 
   let i = 1;
   while (cur < maturity) {
-    cur = addMonthsUTC(new Date(issue), i*step);
+    cur = addMonthsUTC(new Date(issue), i * step);
+
+    if (regime != "NORMAL") {
+      const holidaySet = new Set();
+
+      Object.entries(vacationData).forEach(([startStr, info]) => {
+        const startDate = parseDateVN(startStr);
+        const duration = info.Last || 1;
+
+        for (let i = 0; i < duration; i++) {
+          const d = new Date(startDate);
+          d.setDate(d.getDate() + i);
+          holidaySet.add(d.toDateString());
+        }
+      });
+      // Adjust to next working day (Monday) if Saturday (6) or Sunday (0)
+      const dayOfWeek = cur.getUTCDay();
+      if (dayOfWeek === 0) {
+        // Sunday → next Monday
+        cur = new Date(
+          Date.UTC(
+            cur.getUTCFullYear(),
+            cur.getUTCMonth(),
+            cur.getUTCDate() + 1,
+          ),
+        );
+      } else if (dayOfWeek === 6) {
+        // Saturday → next Monday
+        cur = new Date(
+          Date.UTC(
+            cur.getUTCFullYear(),
+            cur.getUTCMonth(),
+            cur.getUTCDate() + 2,
+          ),
+        );
+      } else if (holidaySet.has(cur.toDateString())) {
+        // If the current date is a holiday, move to the next working day
+        cur = new Date(
+          Date.UTC(
+            cur.getUTCFullYear(),
+            cur.getUTCMonth(),
+            cur.getUTCDate() + 1,
+          ),
+        );
+        // Keep moving forward until we find a non-holiday working day
+        while (holidaySet.has(cur.toDateString())) {
+          cur = new Date(
+            Date.UTC(
+              cur.getUTCFullYear(),
+              cur.getUTCMonth(),
+              cur.getUTCDate() + 1,
+            ),
+          );
+        }
+      }
+    }
     dates.push(cur);
     i++;
     // If we overshoot maturity, stop
@@ -129,7 +207,8 @@ function buildSchedule(issue, maturity, freq) {
 
 function findPrevNext(schedule, settle) {
   let i = 0;
-  let prev = null, next = null;
+  let prev = null,
+    next = null;
   for (let d of schedule) {
     i++;
     if (d <= settle) prev = d;
@@ -153,7 +232,7 @@ export function getInterestRate(interestSchedule, paymentNum) {
   // Find the rate for this payment number
   for (let i = interestSchedule.length - 1; i >= 0; i--) {
     if (paymentNum >= interestSchedule[i].payment) {
-      return  interestSchedule[i];
+      return interestSchedule[i];
     }
   }
   // Default to first rate if payment number is before first defined payment
@@ -162,55 +241,64 @@ export function getInterestRate(interestSchedule, paymentNum) {
 
 export function calculateAverageBankRate(referenceBank, bankRates) {
   if (!referenceBank || referenceBank.length === 0) return 0;
-  
+
   let sum = 0;
   let count = 0;
-  
+
   for (let bank of referenceBank) {
     if (bankRates[bank] !== undefined) {
       sum += bankRates[bank];
       count++;
     }
   }
-  
+
   return count > 0 ? sum / count : 0;
 }
 
 // ================= PRICING (FLOATING RATE) =================
 
-export function priceFloatingBond({ 
-  fv, 
-  ytm, 
-  freq, 
-  issue, 
-  settle, 
-  maturity, 
+export function priceFloatingBond({
+  fv,
+  ytm,
+  freq,
+  issue,
+  settle,
+  maturity,
   interestSchedule,
   baseBankRate,
-  recordingDays = 10
+  recordingDays = 10,
+  regime = "NORMAL",
 }) {
-  const schedule = buildSchedule(issue, maturity, freq);
+  console.log("Pricing floating bond with base bank rate:", baseBankRate);
+  const schedule = buildSchedule(issue, maturity, freq, vacationDates, regime);
+  console.log("Payment schedule:", schedule);
+
   const { prev, next } = findPrevNext(schedule, settle);
 
   let accrued = 0;
   let inRecordingPeriod = false;
   let upcomingCouponDate = null;
   let recordingStartDate = null;
-  
+
   // Check if we're in recording period for the next coupon
   if (next) {
     inRecordingPeriod = isInRecordingPeriod(settle, next, recordingDays);
     if (inRecordingPeriod) {
       upcomingCouponDate = next;
-      recordingStartDate = subtractWorkingDays(next, recordingDays);
+      recordingStartDate = subtractWorkingDays(
+        next,
+        recordingDays,
+        vacationDates,
+      );
     }
   }
-  
+
   // If in recording period, don't calculate accrued interest
   if (!inRecordingPeriod && prev && settle >= prev) {
     const paymentNum = getPaymentNumber(schedule, prev);
     const scheduleRate = getInterestRate(interestSchedule, paymentNum);
-    let effectiveRate = scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
+    let effectiveRate =
+      scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
 
     if (scheduleRate.floorRate && effectiveRate < scheduleRate.floorRate) {
       effectiveRate = scheduleRate.floorRate;
@@ -223,38 +311,39 @@ export function priceFloatingBond({
 
   function df(payDate) {
     const yf = yearFrac(settle, payDate);
-    const r = (ytm / 100);
+    const r = ytm / 100;
     return Math.pow(1 + r, -yf);
   }
 
   for (let i = 0; i < schedule.length; i++) {
     const payDate = schedule[i];
     if (payDate <= settle) continue;
-    
+
     // Skip the next coupon if we're in its recording period
     if (inRecordingPeriod && +payDate === +next) {
-      cfs.push({ 
-        date: formatDateVN(payDate), 
-        yf: 0, 
-        cf: 0, 
-        pv: 0, 
+      cfs.push({
+        date: formatDateVN(payDate),
+        yf: 0,
+        cf: 0,
+        pv: 0,
         rate: 0,
         paymentNum: getPaymentNumber(schedule, payDate),
         scheduleRate: 0,
         baseBankRate,
         skipped: true,
-        reason: 'In recording period'
+        reason: "In recording period",
       });
       continue;
     }
 
     const prevDate = schedule[i - 1] ?? issue;
     const yf = yearFrac(prevDate, payDate);
-    
+
     // Get payment number and corresponding rate
     const paymentNum = getPaymentNumber(schedule, payDate);
     const scheduleRate = getInterestRate(interestSchedule, paymentNum);
-    let effectiveRate = scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
+    let effectiveRate =
+      scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
 
     if (scheduleRate.floorRate && effectiveRate < scheduleRate.floorRate) {
       effectiveRate = scheduleRate.floorRate;
@@ -266,29 +355,32 @@ export function priceFloatingBond({
     const pv = cf * df(payDate);
     dirty += pv;
     // dirty = Math.round(Number(dirty.toFixed(6)));
-    cfs.push({ 
-      date: formatDateVN(payDate), 
-      yf, 
-      cf, 
-      pv, 
+    console.log(
+      `CF on ${formatDateVN(payDate)}: cf=${cf}, pv=${pv}, dirty=${dirty}`,
+    );
+    cfs.push({
+      date: formatDateVN(payDate),
+      yf,
+      cf,
+      pv,
       rate: effectiveRate,
       paymentNum,
       scheduleRate: scheduleRate.rate,
       baseBankRate,
-      skipped: false
+      skipped: false,
     });
   }
 
-  return { 
-    dirty, 
-    clean: dirty - accrued, 
-    accrued, 
-    prev, 
-    next, 
+  return {
+    dirty,
+    clean: dirty - accrued,
+    accrued,
+    prev,
+    next,
     cfs,
     inRecordingPeriod,
     upcomingCouponDate,
-    recordingStartDate
+    recordingStartDate,
   };
 }
 
@@ -306,7 +398,8 @@ export function calculateYTM({
   recordingDays = 10,
   initialGuess = 8, // Initial YTM guess in %
   tolerance = 0.0001, // Price difference tolerance in VND
-  maxIterations = 100
+  maxIterations = 100,
+  regime = "NORMAL",
 }) {
   let ytm = initialGuess;
   let iteration = 0;
@@ -323,7 +416,8 @@ export function calculateYTM({
       maturity,
       interestSchedule,
       baseBankRate,
-      recordingDays
+      recordingDays,
+      regime
     });
 
     priceDiff = result.dirty - targetPrice;
@@ -335,7 +429,7 @@ export function calculateYTM({
         ytm,
         iterations: iteration,
         precision: Math.abs(priceDiff),
-        bondData: result
+        bondData: result,
       };
     }
 
@@ -350,7 +444,8 @@ export function calculateYTM({
       maturity,
       interestSchedule,
       baseBankRate,
-      recordingDays
+      recordingDays,
+      regime
     });
 
     const derivative = (resultUp.dirty - result.dirty) / delta;
@@ -361,7 +456,7 @@ export function calculateYTM({
         success: false,
         message: `Convergence failed: derivative too small at iteration ${iteration}`,
         ytm,
-        iterations: iteration
+        iterations: iteration,
       };
     }
 
@@ -374,7 +469,7 @@ export function calculateYTM({
         success: false,
         message: `YTM out of reasonable range (${ytmNew.toFixed(2)}%) at iteration ${iteration}`,
         ytm,
-        iterations: iteration
+        iterations: iteration,
       };
     }
 
@@ -387,7 +482,7 @@ export function calculateYTM({
       success: false,
       message: `Maximum iterations (${maxIterations}) reached. Last price difference: ${vndInt.format(Math.abs(priceDiff))}`,
       ytm,
-      iterations: iteration
+      iterations: iteration,
     };
   }
 
@@ -401,7 +496,8 @@ export function calculateYTM({
     maturity,
     interestSchedule,
     baseBankRate,
-    recordingDays
+    recordingDays,
+    regime
   });
 
   return {
@@ -409,7 +505,7 @@ export function calculateYTM({
     ytm,
     iterations: iteration,
     precision: Math.abs(finalResult.dirty - targetPrice),
-    bondData: finalResult
+    bondData: finalResult,
   };
 }
 // ================= TRANSACTION CALCULATION =================
@@ -427,7 +523,8 @@ export function calculateTransaction({
   maturity,
   interestSchedule,
   baseBankRate,
-  recordingDays = 10
+  recordingDays = 10,
+  regime = "NORMAL",
 }) {
   // ========== LEG 1 (BUYING) ==========
   const leg1Bond = priceFloatingBond({
@@ -439,7 +536,8 @@ export function calculateTransaction({
     maturity,
     interestSchedule,
     baseBankRate,
-    recordingDays
+    recordingDays,
+    regime
   });
 
   const leg1PricePerBond = Math.round(leg1Bond.dirty + 0.5);
@@ -448,19 +546,25 @@ export function calculateTransaction({
   const leg1TotalInvestment = leg1SettlementAmount + leg1TransactionFee;
 
   // ========== CALCULATE COUPONS RECEIVED ==========
-  const schedule = buildSchedule(issue, maturity, freq);
+  const schedule = buildSchedule(issue, maturity, freq, vacationDates, regime);
   let couponsReceived = 0;
   const couponFlows = []; // NEW: Track individual coupon payments
-  
+
   for (let i = 0; i < schedule.length; i++) {
     const couponDate = schedule[i];
-    if (subtractWorkingDays(couponDate, recordingDays) >= paymentDateBuying && subtractWorkingDays(couponDate, recordingDays) < paymentDateSelling) {
+    if (
+      subtractWorkingDays(couponDate, recordingDays, vacationDates) >=
+        paymentDateBuying &&
+      subtractWorkingDays(couponDate, recordingDays, vacationDates) <
+        paymentDateSelling
+    ) {
       const prevDate = schedule[i - 1] ?? issue;
       const yf = yearFrac(prevDate, couponDate);
-      
+
       const paymentNum = getPaymentNumber(schedule, couponDate);
       const scheduleRate = getInterestRate(interestSchedule, paymentNum);
-      let effectiveRate = scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
+      let effectiveRate =
+        scheduleRate.rate + (scheduleRate.isFloat ? baseBankRate : 0);
 
       if (scheduleRate.floorRate && effectiveRate < scheduleRate.floorRate) {
         effectiveRate = scheduleRate.floorRate;
@@ -469,15 +573,15 @@ export function calculateTransaction({
       const grossCouponAmount = faceValue * effectiveRate * yf * numBonds;
       const couponTax = grossCouponAmount * 0.05;
       const netCouponAmount = grossCouponAmount - couponTax;
-      
+
       couponsReceived += grossCouponAmount;
-      
+
       // NEW: Store coupon flow details
       couponFlows.push({
         date: couponDate,
         grossAmount: grossCouponAmount,
         tax: couponTax,
-        netAmount: netCouponAmount
+        netAmount: netCouponAmount,
       });
     }
   }
@@ -487,7 +591,8 @@ export function calculateTransaction({
 
   // ========== CALCULATE TARGET AMOUNT ==========
   const daysHolding = actualDays(paymentDateBuying, paymentDateSelling);
-  const targetAmount = leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365));
+  const targetAmount =
+    leg1SettlementAmount * (1 + (holdingRate / 100) * (daysHolding / 365));
 
   // ========== LEG 2 (SELLING) ==========
   let leg2SettlementAmount;
@@ -501,23 +606,27 @@ export function calculateTransaction({
     const transferFee = Math.min(300000, numBonds * 0.3);
     leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / 0.998;
     leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
-    leg2SettlementAmount = leg2PricePerBond*numBonds;
-    
+    leg2SettlementAmount = leg2PricePerBond * numBonds;
+
     leg2TransactionFee = leg2SettlementAmount * 0.001;
     leg2TransferTax = leg2SettlementAmount * 0.001;
     leg2TransferFee = transferFee;
-    
-    leg2TotalReceived = leg2SettlementAmount - leg2TransactionFee - leg2TransferTax - leg2TransferFee + netCoupons;
-    
+
+    leg2TotalReceived =
+      leg2SettlementAmount -
+      leg2TransactionFee -
+      leg2TransferTax -
+      leg2TransferFee +
+      netCoupons;
   } else {
     leg2SettlementAmount = targetAmount - netCoupons;
     leg2PricePerBond = leg2SettlementAmount / numBonds;
-    
+
     leg2TransactionFee = leg2SettlementAmount * 0.001;
     leg2TransferTax = leg2SettlementAmount * 0.001;
-    
+
     leg2TransferFee = Math.min(300000, numBonds * 0.3);
-    
+
     leg2TotalReceived = leg2SettlementAmount + netCoupons;
   }
 
@@ -530,20 +639,28 @@ export function calculateTransaction({
     maturity,
     interestSchedule,
     baseBankRate,
-    recordingDays
+    recordingDays,
+    regime
   });
 
   // ========== PROFIT CALCULATION ==========
-  const expectedInterest = leg1TotalInvestment * (holdingRate / 100) * (daysHolding / 365);
-  
+  const expectedInterest =
+    leg1TotalInvestment * (holdingRate / 100) * (daysHolding / 365);
+
   let totalProfit;
   if (coverFees) {
     totalProfit = leg2TotalReceived - leg1TotalInvestment;
   } else {
-    totalProfit = leg2TotalReceived - leg1TotalInvestment - leg2TransferFee - leg2TransferTax - leg2TransactionFee;
+    totalProfit =
+      leg2TotalReceived -
+      leg1TotalInvestment -
+      leg2TransferFee -
+      leg2TransferTax -
+      leg2TransactionFee;
   }
 
-  const annualizedReturn = (totalProfit / leg1TotalInvestment) * (365 / daysHolding) * 100;
+  const annualizedReturn =
+    (totalProfit / leg1TotalInvestment) * (365 / daysHolding) * 100;
 
   return {
     leg1: {
@@ -554,7 +671,7 @@ export function calculateTransaction({
       paymentDate: paymentDateBuying, // NEW
       inRecordingPeriod: leg1Bond.inRecordingPeriod,
       upcomingCouponDate: leg1Bond.upcomingCouponDate,
-      recordingStartDate: leg1Bond.recordingStartDate
+      recordingStartDate: leg1Bond.recordingStartDate,
     },
     leg2: {
       pricePerBond: leg2PricePerBond,
@@ -567,7 +684,7 @@ export function calculateTransaction({
       marketPricePerBond: leg2Bond.dirty,
       inRecordingPeriod: leg2Bond.inRecordingPeriod,
       upcomingCouponDate: leg2Bond.upcomingCouponDate,
-      recordingStartDate: leg2Bond.recordingStartDate
+      recordingStartDate: leg2Bond.recordingStartDate,
     },
     profit: {
       daysHolding,
@@ -578,7 +695,7 @@ export function calculateTransaction({
       couponFlows, // NEW: Array of coupon payment details
       totalProfit,
       holdingInterestRate: annualizedReturn,
-      targetAmount
-    }
+      targetAmount,
+    },
   };
 }
