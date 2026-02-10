@@ -592,7 +592,7 @@ export function calculateTransaction({
   // ========== CALCULATE TARGET AMOUNT ==========
   const daysHolding = actualDays(paymentDateBuying, paymentDateSelling);
   const targetAmount =
-    leg1SettlementAmount * (1 + (holdingRate / 100) * (daysHolding / 365));
+    leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365));
 
   // ========== LEG 2 (SELLING) ==========
   let leg2SettlementAmount;
