@@ -345,7 +345,12 @@ export function initTransactionTab() {
   }
 
   function recalcTransaction() {
-    if (!selectedBondTx) return;
+    if (!selectedBondTx) {
+      outTx.textContent = "Please select a bond";
+      profitTx.textContent = "—";
+      recordingWarningTxEl.classList.add("hidden");
+      return;
+    }
 
     const numBonds = +numBondsEl.value;
     const faceValue = selectedBondTx.faceValue;
@@ -363,6 +368,7 @@ export function initTransactionTab() {
 
     if (!paymentDateBuying || !paymentDateSelling || !issue || !maturity) {
       outTx.textContent = "Invalid date format (DD/MM/YYYY)";
+      profitTx.textContent = "—";
       recordingWarningTxEl.classList.add("hidden");
       return;
     }
@@ -580,13 +586,16 @@ ${couponDetailsHTML}
   initTransactionChart();
 
   bondSelectTxEl.addEventListener("change", onBondSelectTx);
-  [
-    numBondsEl,
-    paymentDateBuyingEl,
-    discountYieldEl,
-    paymentDateSellingEl,
-    holdingRateEl,
-    coverFeesEl,
-  ].forEach((el) => el.addEventListener("input", recalcTransaction));
+  
+  // Add event listeners for all inputs to trigger recalculation
+  numBondsEl.addEventListener("input", recalcTransaction);
+  paymentDateBuyingEl.addEventListener("input", recalcTransaction);
+  paymentDateBuyingEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
+  discountYieldEl.addEventListener("input", recalcTransaction);
+  discountYieldEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
+  paymentDateSellingEl.addEventListener("input", recalcTransaction);
+  paymentDateSellingEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
+  holdingRateEl.addEventListener("input", recalcTransaction);
+  holdingRateEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
   coverFeesEl.addEventListener("change", recalcTransaction);
 }

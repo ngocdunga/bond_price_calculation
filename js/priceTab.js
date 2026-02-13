@@ -74,7 +74,6 @@ export function initPriceTab() {
 
   function recalc() {
     if (!selectedBond) return;
-
     const fv = parseVNDInput(fvEl.value);
     if (!fv) return;
 
