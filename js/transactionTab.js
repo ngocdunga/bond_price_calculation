@@ -446,6 +446,22 @@ export function initTransactionTab() {
       `;
     }
 
+    // Build remaining YTM display section
+    let remainingYTMHTML = '';
+    if (txResult.leg2.ytmCalculationSuccess && txResult.leg2.remainingYTM !== null) {
+      remainingYTMHTML = `
+    <tr>
+      <th>Remaining YTM (at selling price)</th>
+      <td class="highlight-blue"><strong>${txResult.leg2.remainingYTM.toFixed(3)}%</strong></td>
+    </tr>`;
+    } else if (!txResult.leg2.ytmCalculationSuccess) {
+      remainingYTMHTML = `
+    <tr>
+      <th>Remaining YTM (at selling price)</th>
+      <td class="muted">Calculation failed: ${txResult.leg2.ytmCalculationMessage || 'Unknown error'}</td>
+    </tr>`;
+    }
+
     outTx.innerHTML = `
 <h4>Leg 1 - Purchasing Information</h4>
 <table class="table">
@@ -498,10 +514,7 @@ ${couponDetailsHTML}
       <th>Expected selling price (per bond) ${coverFees ? "(adjusted for fees)" : ""}</th>
       <td class="highlight-yellow">${vndInt.format(txResult.leg2.pricePerBond)}</td>
     </tr>
-    <tr>
-      <th>Market price (for reference)</th>
-      <td class="muted">${vndInt.format(txResult.leg2.marketPricePerBond)}</td>
-    </tr>
+    ${remainingYTMHTML}
     <tr>
       <th>Expected settlement amount (G = P2 * N)</th>
       <td>${vndInt.format(txResult.leg2.settlementAmount)}</td>

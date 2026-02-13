@@ -630,9 +630,10 @@ export function calculateTransaction({
     leg2TotalReceived = leg2SettlementAmount + netCoupons;
   }
 
-  const leg2Bond = priceFloatingBond({
+  // Calculate remaining YTM based on leg2 price
+  const leg2YTMResult = calculateYTM({
     fv: faceValue,
-    ytm: holdingRate,
+    targetPrice: leg2PricePerBond,
     freq,
     issue,
     settle: paymentDateSelling,
@@ -640,6 +641,9 @@ export function calculateTransaction({
     interestSchedule,
     baseBankRate,
     recordingDays,
+    initialGuess: holdingRate,
+    tolerance: 0.0001,
+    maxIterations: 100,
     regime
   });
 
@@ -668,7 +672,7 @@ export function calculateTransaction({
       settlementAmount: leg1SettlementAmount,
       transactionFee: leg1TransactionFee,
       totalInvestment: leg1TotalInvestment,
-      paymentDate: paymentDateBuying, // NEW
+      paymentDate: paymentDateBuying,
       inRecordingPeriod: leg1Bond.inRecordingPeriod,
       upcomingCouponDate: leg1Bond.upcomingCouponDate,
       recordingStartDate: leg1Bond.recordingStartDate,
@@ -680,11 +684,13 @@ export function calculateTransaction({
       transferTax: leg2TransferTax,
       transferFee: leg2TransferFee,
       totalReceived: leg2TotalReceived,
-      paymentDate: paymentDateSelling, // NEW
-      marketPricePerBond: leg2Bond.dirty,
-      inRecordingPeriod: leg2Bond.inRecordingPeriod,
-      upcomingCouponDate: leg2Bond.upcomingCouponDate,
-      recordingStartDate: leg2Bond.recordingStartDate,
+      paymentDate: paymentDateSelling,
+      remainingYTM: leg2YTMResult.success ? leg2YTMResult.ytm : null,
+      ytmCalculationSuccess: leg2YTMResult.success,
+      ytmCalculationMessage: leg2YTMResult.success ? null : leg2YTMResult.message,
+      inRecordingPeriod: leg2YTMResult.success ? leg2YTMResult.bondData.inRecordingPeriod : false,
+      upcomingCouponDate: leg2YTMResult.success ? leg2YTMResult.bondData.upcomingCouponDate : null,
+      recordingStartDate: leg2YTMResult.success ? leg2YTMResult.bondData.recordingStartDate : null,
     },
     profit: {
       daysHolding,
@@ -692,7 +698,7 @@ export function calculateTransaction({
       couponsReceived,
       couponTax,
       netCoupons,
-      couponFlows, // NEW: Array of coupon payment details
+      couponFlows,
       totalProfit,
       holdingInterestRate: annualizedReturn,
       targetAmount,
