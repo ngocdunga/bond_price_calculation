@@ -183,5 +183,13 @@ export function initPriceTab() {
     fvEl.setSelectionRange(pos + diff, pos + diff);
     recalc();
   });
+  fvEl.addEventListener("change", () => {
+    fvEl.value = formatVNDInput(fvEl.value);
+    recalc();
+  });
   [yEl, settleEl].forEach((el) => el.addEventListener("input", recalc));
+  [yEl, settleEl].forEach((el) =>
+    el.addEventListener("change", recalc)
+  );
+  
 }

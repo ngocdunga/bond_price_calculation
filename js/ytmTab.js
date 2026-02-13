@@ -184,6 +184,14 @@ export function initYTMTab() {
     fvYTMEl.setSelectionRange(pos + diff, pos + diff);
     recalcYTM();
   });
+  fvYTMEl.addEventListener("change", () => {
+    const pos = fvYTMEl.selectionStart;
+    const before = fvYTMEl.value;
+    fvYTMEl.value = formatVNDInput(before);
+    const diff = fvYTMEl.value.length - before.length;
+    fvYTMEl.setSelectionRange(pos + diff, pos + diff);
+    recalcYTM();
+  });
   priceEl.addEventListener("input", () => {
     const pos = priceEl.selectionStart;
     const before = priceEl.value;
@@ -192,5 +200,14 @@ export function initYTMTab() {
     priceEl.setSelectionRange(pos + diff, pos + diff);
     recalcYTM();
   });
+  priceEl.addEventListener("change", () => {
+    const pos = priceEl.selectionStart;
+    const before = priceEl.value;
+    priceEl.value = formatVNDInput(before);
+    const diff = priceEl.value.length - before.length;
+    priceEl.setSelectionRange(pos + diff, pos + diff);
+    recalcYTM();
+  });
   settleYTMEl.addEventListener("input", recalcYTM);
+  settleYTMEl.addEventListener("change", recalcYTM);
 }
