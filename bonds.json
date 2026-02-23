@@ -122,6 +122,11 @@
         },
         {
           "payment": 5,
+          "rate": 0.11,
+          "isFloat": false
+        },
+        {
+          "payment": 9,
           "rate": 0.038,
           "isFloat": true,
           "floorRate": 0.11
@@ -210,6 +215,11 @@
         },
         {
           "payment": 2,
+          "rate": 0.1,
+          "isFloat": false
+        },
+        {
+          "payment": 4,
           "rate": 0.04,
           "isFloat": true,
           "floorRate": 0.1
@@ -298,6 +308,11 @@
         },
         {
           "payment": 2,
+          "rate": 0.082,
+          "isFloat": false
+        },
+        {
+          "payment": 3,
           "rate": 0.03,
           "isFloat": true
         }
