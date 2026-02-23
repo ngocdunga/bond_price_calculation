@@ -364,7 +364,7 @@
       "category": "bank",
       "issueDate": "05/03/2025",
       "maturity": "05/03/2027",
-      "recordDays": 10,
+      "recordDays": 9,
       "frequency": 1,
       "faceValue": 100000,
       "referenceBank": [
