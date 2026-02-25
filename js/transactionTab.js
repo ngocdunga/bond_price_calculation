@@ -40,7 +40,7 @@ function initTransactionChart() {
           pointHoverRadius: 6,
           stepped: true,
           datalabels: {
-            display: false, // Don't show labels for principal line
+            display: false,
           },
         },
         {
@@ -65,24 +65,19 @@ function initTransactionChart() {
               size: 11,
             },
             formatter: function(value, context) {
-              // Only show labels at coupon payment points (where value changes)
               const index = context.dataIndex;
               const data = context.dataset.data;
               
-              // Show label if:
-              // 1. It's a coupon payment (value increased from previous point)
-              // 2. Not the first or last point
               if (index > 0 && index < data.length - 1) {
                 const prevValue = data[index - 1].y;
                 const currValue = value.y;
                 
                 if (currValue > prevValue) {
-                  // This is a coupon payment - show the increment
                   const increment = currValue - prevValue;
                   return '+' + (increment / 1000000).toFixed(1) + 'M';
                 }
               }
-              return null; // Don't show label
+              return null;
             },
           },
         },
@@ -103,7 +98,6 @@ function initTransactionChart() {
               const index = context.dataIndex;
               const data = context.dataset.data;
               
-              // First point: align right, last point: align left
               if (index === 0) return 'right';
               if (index === data.length - 1) return 'left';
               
@@ -119,13 +113,7 @@ function initTransactionChart() {
               const index = context.dataIndex;
               const data = context.dataset.data;
               
-              // Show labels at:
-              // 1. Start point (initial investment)
-              // 2. Coupon payment points (where value increases)
-              // 3. End point (final value)
-              
               if (index === 0 || index === data.length - 1) {
-                // Show full value at start and end
                 return (value.y / 1000000).toFixed(0) + 'M';
               }
               
@@ -134,18 +122,17 @@ function initTransactionChart() {
                 const currValue = value.y;
                 
                 if (currValue > prevValue) {
-                  // Show total value at coupon payment
                   return (currValue / 1000000).toFixed(1) + 'M';
                 }
               }
               
-              return null; // Don't show label for intermediate points
+              return null;
             },
           },
         },
       ],
     },
-    plugins: [ChartDataLabels], // Register the plugin
+    plugins: [ChartDataLabels],
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -190,7 +177,6 @@ function initTransactionChart() {
           },
         },
         datalabels: {
-          // Global datalabels config (can be overridden per dataset)
           backgroundColor: function(context) {
             return context.dataset.borderColor;
           },
@@ -224,7 +210,6 @@ function initTransactionChart() {
           beginAtZero: true,
           ticks: {
             callback: (v) => {
-              // Show in millions for cleaner axis
               return (v / 1000000).toFixed(0) + 'M';
             },
           },
@@ -260,7 +245,6 @@ function updateTransactionChart(txResult) {
   const initialInvestment = txResult.leg1.totalInvestment;
   const finalReceived = txResult.leg2.totalReceived;
 
-  // Starting point (buy date)
   const buyTime = buyDate.getTime();
   principalSeries.push({ x: buyTime, y: initialInvestment });
   couponSeries.push({ x: buyTime, y: 0 });
@@ -268,17 +252,14 @@ function updateTransactionChart(txResult) {
 
   let accumulatedCoupons = 0;
 
-  // Process coupon payments
   if (txResult.profit.couponFlows && txResult.profit.couponFlows.length > 0) {
     txResult.profit.couponFlows.forEach((coupon, index) => {
       const couponTime = coupon.date.getTime();
       
-      // Just BEFORE coupon payment
       principalSeries.push({ x: couponTime - 1, y: initialInvestment });
       couponSeries.push({ x: couponTime - 1, y: accumulatedCoupons });
       totalValueSeries.push({ x: couponTime - 1, y: initialInvestment + accumulatedCoupons });
       
-      // AT coupon payment - step up
       accumulatedCoupons += coupon.netAmount;
       
       principalSeries.push({ x: couponTime, y: initialInvestment });
@@ -287,7 +268,6 @@ function updateTransactionChart(txResult) {
     });
   }
 
-  // End point (sell date)
   const sellTime = sellDate.getTime();
   
   principalSeries.push({ x: sellTime - 1, y: initialInvestment });
@@ -323,6 +303,7 @@ export function initTransactionTab() {
   const paymentDateSellingEl = document.getElementById("paymentDateSelling");
   const holdingRateEl = document.getElementById("holdingRate");
   const coverFeesEl = document.getElementById("coverFees");
+  const institutionPurchaseEl = document.getElementById("institutionPurchase");
   const outTx = document.getElementById("outTx");
   const profitTx = document.getElementById("profitTx");
 
@@ -362,6 +343,7 @@ export function initTransactionTab() {
     const holdingRate = +holdingRateEl.value;
 
     const coverFees = coverFeesEl.checked;
+    const isInstitution = institutionPurchaseEl.checked;
 
     const issue = parseDateVN(selectedBondTx.issueDate);
     const maturity = parseDateVN(selectedBondTx.maturity);
@@ -380,6 +362,10 @@ export function initTransactionTab() {
 
     const recordingDays = selectedBondTx.recordDays || 10;
 
+    // Determine transaction fee rate based on bond listing
+    const isPrivateBond = selectedBondTx.listing === "private";
+    const transactionFeeRate = isPrivateBond ? 0.00015 : 0.001; // 0.015% for private, 0.1% for public
+
     const txResult = calculateTransaction({
       numBonds,
       faceValue,
@@ -388,13 +374,14 @@ export function initTransactionTab() {
       paymentDateSelling,
       holdingRate,
       coverFees,
+      isInstitution,
+      transactionFeeRate,
       freq: selectedBondTx.frequency,
       issue,
       maturity,
       interestSchedule: selectedBondTx.interestSchedule,
       baseBankRate,
       recordingDays,
-      regime: selectedBondTx.regime
     });
 
     let warnings = [];
@@ -416,6 +403,9 @@ export function initTransactionTab() {
       recordingWarningTxEl.classList.add("hidden");
     }
 
+    const feeRateDisplay = (transactionFeeRate * 100).toFixed(3) + '%';
+    const taxRateDisplay = isInstitution ? '0% (Institution - no withholding tax)' : '5%';
+
     let couponDetailsHTML = "";
     if (
       txResult.profit.couponFlows &&
@@ -423,12 +413,14 @@ export function initTransactionTab() {
     ) {
       couponDetailsHTML = `
         <h4 style="margin-top: 16px">Coupon Payments During Holding Period</h4>
+        <p class="muted">Bond Type: <strong>${isPrivateBond ? 'Private' : 'Public'}</strong> | 
+        Tax Rate: <strong>${taxRateDisplay}</strong></p>
         <table class="table">
           <thead>
             <tr>
               <th>Payment Date</th>
               <th>Gross Amount</th>
-              <th>Tax (5%)</th>
+              <th>Tax ${isInstitution ? '(0%)' : '(5%)'}</th>
               <th>Net Amount</th>
               <th>Accumulated</th>
             </tr>
@@ -452,24 +444,10 @@ export function initTransactionTab() {
       `;
     }
 
-    // Build remaining YTM display section
-    let remainingYTMHTML = '';
-    if (txResult.leg2.ytmCalculationSuccess && txResult.leg2.remainingYTM !== null) {
-      remainingYTMHTML = `
-    <tr>
-      <th>Remaining YTM (at selling price)</th>
-      <td class="highlight-blue"><strong>${txResult.leg2.remainingYTM.toFixed(3)}%</strong></td>
-    </tr>`;
-    } else if (!txResult.leg2.ytmCalculationSuccess) {
-      remainingYTMHTML = `
-    <tr>
-      <th>Remaining YTM (at selling price)</th>
-      <td class="muted">Calculation failed: ${txResult.leg2.ytmCalculationMessage || 'Unknown error'}</td>
-    </tr>`;
-    }
-
     outTx.innerHTML = `
 <h4>Leg 1 - Purchasing Information</h4>
+<p class="muted">Bond Listing: <strong>${isPrivateBond ? 'Private' : 'Public'}</strong> | 
+Transaction Fee: <strong>${feeRateDisplay}</strong></p>
 <table class="table">
   <tbody>
     <tr>
@@ -489,7 +467,7 @@ export function initTransactionTab() {
       <td>${vndInt.format(txResult.leg1.settlementAmount)}</td>
     </tr>
     <tr>
-      <th>Transaction fee (0.100%)</th>
+      <th>Transaction fee (${feeRateDisplay})</th>
       <td>${vndInt.format(txResult.leg1.transactionFee)}</td>
     </tr>
     <tr>
@@ -520,13 +498,12 @@ ${couponDetailsHTML}
       <th>Expected selling price (per bond) ${coverFees ? "(adjusted for fees)" : ""}</th>
       <td class="highlight-yellow">${vndInt.format(txResult.leg2.pricePerBond)}</td>
     </tr>
-    ${remainingYTMHTML}
     <tr>
       <th>Expected settlement amount (G = P2 * N)</th>
       <td>${vndInt.format(txResult.leg2.settlementAmount)}</td>
     </tr>
     <tr>
-      <th>Expected transaction fee (0.100%)</th>
+      <th>Expected transaction fee (${feeRateDisplay})</th>
       <td>${vndInt.format(txResult.leg2.transactionFee)}</td>
     </tr>
     <tr>
@@ -561,7 +538,7 @@ ${couponDetailsHTML}
       <td>${vndInt.format(txResult.profit.couponsReceived)}</td>
     </tr>
     <tr>
-      <th>Coupon tax (5%)</th>
+      <th>Coupon tax ${isInstitution ? '(0% - Institution)' : '(5%)'}</th>
       <td>${vndInt.format(txResult.profit.couponTax)}</td>
     </tr>
     <tr>
@@ -586,16 +563,15 @@ ${couponDetailsHTML}
   initTransactionChart();
 
   bondSelectTxEl.addEventListener("change", onBondSelectTx);
-  
-  // Add event listeners for all inputs to trigger recalculation
   numBondsEl.addEventListener("input", recalcTransaction);
   paymentDateBuyingEl.addEventListener("input", recalcTransaction);
-  paymentDateBuyingEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
+  paymentDateBuyingEl.addEventListener("change", recalcTransaction);
   discountYieldEl.addEventListener("input", recalcTransaction);
-  discountYieldEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
+  discountYieldEl.addEventListener("change", recalcTransaction);
   paymentDateSellingEl.addEventListener("input", recalcTransaction);
-  paymentDateSellingEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
+  paymentDateSellingEl.addEventListener("change", recalcTransaction);
   holdingRateEl.addEventListener("input", recalcTransaction);
-  holdingRateEl.addEventListener("change", recalcTransaction); // Also on change for date pickers
+  holdingRateEl.addEventListener("change", recalcTransaction);
   coverFeesEl.addEventListener("change", recalcTransaction);
+  institutionPurchaseEl.addEventListener("change", recalcTransaction);
 }

@@ -518,6 +518,8 @@ export function calculateTransaction({
   paymentDateSelling,
   holdingRate,
   coverFees,
+  isInstitution = false,
+  transactionFeeRate = 0.001, // Default 0.1%, can be 0.015% for private bonds
   freq,
   issue,
   maturity,
@@ -542,13 +544,14 @@ export function calculateTransaction({
 
   const leg1PricePerBond = Math.round(leg1Bond.dirty + 0.5);
   const leg1SettlementAmount = leg1PricePerBond * numBonds;
-  const leg1TransactionFee = leg1SettlementAmount * 0.001;
+  const leg1TransactionFee = leg1SettlementAmount * transactionFeeRate;
   const leg1TotalInvestment = leg1SettlementAmount + leg1TransactionFee;
 
   // ========== CALCULATE COUPONS RECEIVED ==========
   const schedule = buildSchedule(issue, maturity, freq, vacationDates, regime);
   let couponsReceived = 0;
   const couponFlows = []; // NEW: Track individual coupon payments
+  const couponTaxRate = isInstitution ? 0 : 0.05;
 
   for (let i = 0; i < schedule.length; i++) {
     const couponDate = schedule[i];
@@ -571,7 +574,7 @@ export function calculateTransaction({
       }
 
       const grossCouponAmount = faceValue * effectiveRate * yf * numBonds;
-      const couponTax = grossCouponAmount * 0.05;
+      const couponTax = grossCouponAmount * couponTaxRate;
       const netCouponAmount = grossCouponAmount - couponTax;
 
       couponsReceived += grossCouponAmount;
@@ -586,7 +589,7 @@ export function calculateTransaction({
     }
   }
 
-  const couponTax = couponsReceived * 0.05;
+  const couponTax = couponsReceived * couponTaxRate;
   const netCoupons = couponsReceived - couponTax;
 
   // ========== CALCULATE TARGET AMOUNT ==========
@@ -608,7 +611,7 @@ export function calculateTransaction({
     leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
     leg2SettlementAmount = leg2PricePerBond * numBonds;
 
-    leg2TransactionFee = leg2SettlementAmount * 0.001;
+    leg2TransactionFee = leg2SettlementAmount * transactionFeeRate;
     leg2TransferTax = leg2SettlementAmount * 0.001;
     leg2TransferFee = transferFee;
 
@@ -622,7 +625,7 @@ export function calculateTransaction({
     leg2SettlementAmount = targetAmount - netCoupons;
     leg2PricePerBond = leg2SettlementAmount / numBonds;
 
-    leg2TransactionFee = leg2SettlementAmount * 0.001;
+    leg2TransactionFee = leg2SettlementAmount * transactionFeeRate;
     leg2TransferTax = leg2SettlementAmount * 0.001;
 
     leg2TransferFee = Math.min(300000, numBonds * 0.3);

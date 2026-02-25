@@ -93,31 +93,38 @@
     </div>
 
     <!-- TRANSACTION CALCULATOR TAB -->
-    <div id="transaction-tab" class="tab-content">
-      <div class="grid">
-        <div class="box">
-          <h3>Transaction Inputs</h3>
-          <label>Select Bond</label>
-          <select id="bondSelectTx">
-            <option value="">-- Select a bond --</option>
-          </select>
-          <div id="bondInfoTx" class="bond-info hidden"></div>
-          <div id="bankRateInfoTx" class="bank-rate-info hidden"></div>
-          <div id="recordingWarningTx" class="recording-warning hidden"></div>
-          <label>Number of bonds</label>
-          <input id="numBonds" type="number" value="100" step="1" />
-          <label>Leg 1 - Payment Date (Buying) (DD/MM/YYYY)</label>
-          <input id="paymentDateBuying" type="text" />
-          <label>Leg 1 - Discount Yield (% / year)</label>
-          <input id="discountYield" type="number" value="5.5" step="0.01" />
-          <label>Leg 2 - Expected Payment Date (Selling) (DD/MM/YYYY)</label>
-          <input id="paymentDateSelling" type="text" />
-          <label>Leg 2 - Expected Holding Interest Rate (% / year)</label>
-          <input id="holdingRate" type="number" value="4.3" step="0.01" />
-          <label class="checkbox-label">
-            <input id="coverFees" type="checkbox" checked />
-            Cover transaction fees and taxes
-          </label>
+  <div id="transaction-tab" class="tab-content">
+    <div class="grid">
+      <div class="box">
+        <h3>Transaction Inputs</h3>
+        <label>Select Bond</label>
+        <select id="bondSelectTx">
+          <option value="">-- Select a bond --</option>
+        </select>
+        <div id="bondInfoTx" class="bond-info hidden"></div>
+        <div id="bankRateInfoTx" class="bank-rate-info hidden"></div>
+        <div id="recordingWarningTx" class="recording-warning hidden"></div>
+        <label>Number of bonds</label>
+        <input id="numBonds" type="number" value="100" step="1" />
+        <label>Leg 1 - Payment Date (Buying) (DD/MM/YYYY)</label>
+        <input id="paymentDateBuying" type="text" />
+        <label>Leg 1 - Discount Yield (% / year)</label>
+        <input id="discountYield" type="number" value="5.5" step="0.01" />
+        
+        <label>Leg 2 - Expected Payment Date (Selling) (DD/MM/YYYY)</label>
+        <input id="paymentDateSelling" type="text" />
+        
+        <label>Leg 2 - Expected Holding Interest Rate (% / year)</label>
+        <input id="holdingRate" type="number" value="4.3" step="0.01" />
+        
+        <label class="checkbox-label">
+          <input id="coverFees" type="checkbox" checked />
+          Cover transaction fees and taxes
+        </label>
+        <label class="checkbox-label">
+          <input id="institutionPurchase" type="checkbox" />
+          Institution Purchase (No withholding tax on coupons)
+        </label>
         </div>
         <div class="box">
           <h3>Transaction Results</h3>
