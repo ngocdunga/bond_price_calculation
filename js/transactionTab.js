@@ -382,6 +382,7 @@ export function initTransactionTab() {
       interestSchedule: selectedBondTx.interestSchedule,
       baseBankRate,
       recordingDays,
+      regime: selectedBondTx.regime
     });
 
     let warnings = [];
@@ -413,8 +414,7 @@ export function initTransactionTab() {
     ) {
       couponDetailsHTML = `
         <h4 style="margin-top: 16px">Coupon Payments During Holding Period</h4>
-        <p class="muted">Bond Type: <strong>${isPrivateBond ? 'Private' : 'Public'}</strong> | 
-        Tax Rate: <strong>${taxRateDisplay}</strong></p>
+        <p class="muted">Bond Type: <strong>${isPrivateBond ? 'Private' : 'Public'}</strong> | Tax Rate: <strong>${taxRateDisplay}</strong></p>
         <table class="table">
           <thead>
             <tr>
@@ -446,8 +446,7 @@ export function initTransactionTab() {
 
     outTx.innerHTML = `
 <h4>Leg 1 - Purchasing Information</h4>
-<p class="muted">Bond Listing: <strong>${isPrivateBond ? 'Private' : 'Public'}</strong> | 
-Transaction Fee: <strong>${feeRateDisplay}</strong></p>
+<p class="muted">Bond Listing: <strong>${isPrivateBond ? 'Private' : 'Public'}</strong> | Transaction Fee: <strong>${feeRateDisplay}</strong></p>
 <table class="table">
   <tbody>
     <tr>

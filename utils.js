@@ -607,7 +607,7 @@ export function calculateTransaction({
 
   if (coverFees) {
     const transferFee = Math.min(300000, numBonds * 0.3);
-    leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / 0.998;
+    leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / (1 - transactionFeeRate - 0.001);
     leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
     leg2SettlementAmount = leg2PricePerBond * numBonds;
 
