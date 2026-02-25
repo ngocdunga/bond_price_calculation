@@ -498,6 +498,10 @@ ${couponDetailsHTML}
       <td class="highlight-yellow">${vndInt.format(txResult.leg2.pricePerBond)}</td>
     </tr>
     <tr>
+      <th>Remaining yield</th>
+      <td><strong>${txResult.leg2.remainingYTM ? txResult.leg2.remainingYTM.toFixed(3) : 'N/A'}%</strong></td>
+    </tr>
+    <tr>
       <th>Expected settlement amount (G = P2 * N)</th>
       <td>${vndInt.format(txResult.leg2.settlementAmount)}</td>
     </tr>
