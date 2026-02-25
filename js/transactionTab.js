@@ -365,7 +365,7 @@ export function initTransactionTab() {
     // Determine transaction fee rate based on bond listing
     const isPrivateBond = selectedBondTx.listing === "private";
     const transactionFeeRate = isPrivateBond ? 0.00015 : 0.001; // 0.015% for private, 0.1% for public
-
+    const regime = selectedBondTx.regime;
     const txResult = calculateTransaction({
       numBonds,
       faceValue,
@@ -382,7 +382,7 @@ export function initTransactionTab() {
       interestSchedule: selectedBondTx.interestSchedule,
       baseBankRate,
       recordingDays,
-      regime: selectedBondTx.regime
+      regime
     });
 
     let warnings = [];
