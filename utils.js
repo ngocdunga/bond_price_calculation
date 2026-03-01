@@ -544,7 +544,7 @@ export function calculateTransaction({
 
   const leg1PricePerBond = Math.round(leg1Bond.dirty + 0.5);
   const leg1SettlementAmount = leg1PricePerBond * numBonds;
-  const leg1TransactionFee = leg1SettlementAmount * transactionFeeRate;
+  const leg1TransactionFee = Math.round(leg1SettlementAmount * transactionFeeRate);
   const leg1TotalInvestment = leg1SettlementAmount + leg1TransactionFee;
 
   // ========== CALCULATE COUPONS RECEIVED ==========
@@ -594,8 +594,7 @@ export function calculateTransaction({
 
   // ========== CALCULATE TARGET AMOUNT ==========
   const daysHolding = actualDays(paymentDateBuying, paymentDateSelling);
-  const targetAmount =
-    leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365));
+  const targetAmount = Math.round(leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365)));
 
   // ========== LEG 2 (SELLING) ==========
   let leg2SettlementAmount;
