@@ -341,6 +341,11 @@
           "isFloat": false
         },
         {
+          "payment": 2,
+          "rate": 0.082,
+          "isFloat": false
+        },
+        {
           "payment": 3,
           "rate": 0.03,
           "isFloat": true
@@ -371,6 +376,11 @@
         },
         {
           "payment": 2,
+          "rate": 0.081,
+          "isFloat": false
+        },
+        {
+          "payment": 3,
           "rate": 0.029,
           "isFloat": true
         }
