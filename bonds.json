@@ -521,6 +521,25 @@
       "faceValue": 100000,
       "referenceBank": [],
       "regime": "NORMAL"
+    },
+    {
+      "code": "TNG122017",
+      "interestSchedule": [
+        {
+          "payment": 1,
+          "rate": 0.1,
+          "isFloat": false
+        }
+      ],
+      "listing": "public",
+      "category": "corporate",
+      "issueDate": "16/05/2022",
+      "maturity": "16/05/2026",
+      "recordDays": 10,
+      "frequency": 4,
+      "faceValue": 100000,
+      "referenceBank": [],
+      "regime": "NORMAL"
     }
   ]
 }
