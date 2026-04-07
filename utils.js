@@ -527,6 +527,7 @@ export function calculateTransaction({
   baseBankRate,
   recordingDays = 10,
   regime = "NORMAL",
+  couponPrecision = 0,
 }) {
   // ========== LEG 1 (BUYING) ==========
   const leg1Bond = priceFloatingBond({
@@ -573,7 +574,7 @@ export function calculateTransaction({
         effectiveRate = scheduleRate.floorRate;
       }
 
-      const grossCouponAmount = faceValue * effectiveRate * yf * numBonds;
+      const grossCouponAmount = Math.round(Math.round(faceValue * effectiveRate * yf * Math.pow(10, couponPrecision)) / Math.pow(10, couponPrecision) * numBonds);
       const couponTax = grossCouponAmount * couponTaxRate;
       const netCouponAmount = grossCouponAmount - couponTax;
 

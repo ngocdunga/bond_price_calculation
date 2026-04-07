@@ -348,6 +348,8 @@ export function initTransactionTab() {
     const issue = parseDateVN(selectedBondTx.issueDate);
     const maturity = parseDateVN(selectedBondTx.maturity);
 
+    const couponPrecision = selectedBondTx.couponPrecision || 0;
+
     if (!paymentDateBuying || !paymentDateSelling || !issue || !maturity) {
       outTx.textContent = "Invalid date format (DD/MM/YYYY)";
       profitTx.textContent = "—";
@@ -382,7 +384,8 @@ export function initTransactionTab() {
       interestSchedule: selectedBondTx.interestSchedule,
       baseBankRate,
       recordingDays,
-      regime
+      regime,
+      couponPrecision,
     });
 
     let warnings = [];

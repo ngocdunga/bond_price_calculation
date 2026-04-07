@@ -17,7 +17,8 @@
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": [],
-      "regime": "WORKING"
+      "regime": "WORKING",
+      "couponPrecision": 0
     },
     {
       "code": "BAF123020",
@@ -36,7 +37,8 @@
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "CMX123035",
@@ -55,7 +57,8 @@
       "frequency": 4,
       "faceValue": 100000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "SBT12301",
@@ -115,7 +118,8 @@
         "CTG",
         "MBB"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "TDP124010",
@@ -150,7 +154,8 @@
         "BID",
         "CTG"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 3
     },
     {
       "code": "NLG12401",
@@ -184,7 +189,8 @@
         "BID",
         "CTG"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "NLG12501",
@@ -208,7 +214,8 @@
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "BCM12403",
@@ -243,7 +250,8 @@
         "CTG",
         "ARG"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "KBC12401",
@@ -262,7 +270,8 @@
       "frequency": 2,
       "faceValue": 1000000000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "TNG124027",
@@ -301,7 +310,8 @@
         "BID",
         "CTG"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "SHB125017",
@@ -335,7 +345,8 @@
         "BID",
         "CTG"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "SHB125010",
@@ -374,7 +385,8 @@
         "BID",
         "CTG"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "LPB125006",
@@ -408,7 +420,8 @@
         "BID",
         "CTG"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "CII425021",
@@ -434,7 +447,8 @@
       "referenceBank": [
         "VCB"
       ],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "SGR12501",
@@ -463,7 +477,8 @@
       "frequency": 4,
       "faceValue": 100000000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "BAF126003",
@@ -482,7 +497,8 @@
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "VLH12501",
@@ -501,7 +517,8 @@
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "CTD12501",
@@ -520,7 +537,8 @@
       "frequency": 2,
       "faceValue": 100000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     },
     {
       "code": "TNG122017",
@@ -539,7 +557,8 @@
       "frequency": 4,
       "faceValue": 100000,
       "referenceBank": [],
-      "regime": "NORMAL"
+      "regime": "NORMAL",
+      "couponPrecision": 0
     }
   ]
 }
