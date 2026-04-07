@@ -346,7 +346,7 @@
         "CTG"
       ],
       "regime": "NORMAL",
-      "couponPrecision": 0
+      "couponPrecision": 4
     },
     {
       "code": "SHB125010",
@@ -386,7 +386,7 @@
         "CTG"
       ],
       "regime": "NORMAL",
-      "couponPrecision": 0
+      "couponPrecision": 4
     },
     {
       "code": "LPB125006",
@@ -558,7 +558,7 @@
       "faceValue": 100000,
       "referenceBank": [],
       "regime": "NORMAL",
-      "couponPrecision": 0
+      "couponPrecision": 2
     }
   ]
 }
