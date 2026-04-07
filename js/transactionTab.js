@@ -301,34 +301,39 @@ export function initTransactionTab() {
   const recordingWarningTxEl = document.getElementById("recordingWarningTx");
   const numBondsEl = document.getElementById("numBonds");
   const orderDateBuyingEl = document.getElementById("orderDateBuying");
-  const paymentDateBuyingEl = document.getElementById("paymentDateBuying");
   const discountYieldEl = document.getElementById("discountYield");
   const orderDateSellingEl = document.getElementById("orderDateSelling");
-  const paymentDateSellingEl = document.getElementById("paymentDateSelling");
   const holdingRateEl = document.getElementById("holdingRate");
   const coverFeesEl = document.getElementById("coverFees");
   const institutionPurchaseEl = document.getElementById("institutionPurchase");
   const outTx = document.getElementById("outTx");
   const profitTx = document.getElementById("profitTx");
 
-  function updatePaymentDateFromOrderDate(orderDateEl, paymentDateEl, isPrivateBond) {
-    const orderDateStr = orderDateEl.value;
-    if (!orderDateStr) return;
+  function updatePaymentDates() {
+    if (selectedBondTx) {
+      const isPrivateBond = selectedBondTx.listing === "private";
+      const orderDateBuying = parseDateVN(orderDateBuyingEl.value);
+      const orderDateSelling = parseDateVN(orderDateSellingEl.value);
 
-    const orderDate = parseDateVN(orderDateStr);
-    if (!orderDate) return;
+      if (orderDateBuying) {
+        let paymentDateBuying;
+        if (isPrivateBond) {
+          paymentDateBuying = new Date(orderDateBuying);
+        } else {
+          paymentDateBuying = getNextWorkingDay(orderDateBuying, vacationDates);
+        }
+        // Store for calculation (no need to update input)
+      }
 
-    let paymentDate;
-    if (isPrivateBond) {
-      // Private bond: payment date = order date
-      paymentDate = new Date(orderDate);
-    } else {
-      // Public bond: payment date = next working day
-      paymentDate = getNextWorkingDay(orderDate, vacationDates);
-    }
-
-    if (paymentDate) {
-      paymentDateEl.value = formatDateVN(paymentDate);
+      if (orderDateSelling) {
+        let paymentDateSelling;
+        if (isPrivateBond) {
+          paymentDateSelling = new Date(orderDateSelling);
+        } else {
+          paymentDateSelling = getNextWorkingDay(orderDateSelling, vacationDates);
+        }
+        // Store for calculation (no need to update input)
+      }
     }
   }
 
@@ -347,6 +352,7 @@ export function initTransactionTab() {
     if (!selectedBondTx) return;
 
     updateBondInfo(selectedBondTx, bondInfoTxEl, bankRateInfoTxEl);
+    updatePaymentDates();
     recalcTransaction();
   }
 
@@ -362,15 +368,30 @@ export function initTransactionTab() {
     const faceValue = selectedBondTx.faceValue;
 
     const orderDateBuying = parseDateVN(orderDateBuyingEl.value);
-    const paymentDateBuying = parseDateVN(paymentDateBuyingEl.value);
     const discountYield = +discountYieldEl.value;
 
     const orderDateSelling = parseDateVN(orderDateSellingEl.value);
-    const paymentDateSelling = parseDateVN(paymentDateSellingEl.value);
     const holdingRate = +holdingRateEl.value;
 
     const coverFees = coverFeesEl.checked;
     const isInstitution = institutionPurchaseEl.checked;
+
+    // Calculate payment dates from order dates
+    let paymentDateBuying = null;
+    let paymentDateSelling = null;
+    const isPrivateBond = selectedBondTx.listing === "private";
+
+    if (orderDateBuying) {
+      paymentDateBuying = isPrivateBond 
+        ? new Date(orderDateBuying) 
+        : getNextWorkingDay(orderDateBuying, vacationDates);
+    }
+
+    if (orderDateSelling) {
+      paymentDateSelling = isPrivateBond 
+        ? new Date(orderDateSelling) 
+        : getNextWorkingDay(orderDateSelling, vacationDates);
+    }
 
     const issue = parseDateVN(selectedBondTx.issueDate);
     const maturity = parseDateVN(selectedBondTx.maturity);
@@ -397,7 +418,6 @@ export function initTransactionTab() {
     const recordingDays = selectedBondTx.recordDays || 10;
 
     // Determine transaction fee rate based on bond listing
-    const isPrivateBond = selectedBondTx.listing === "private";
     const transactionFeeRate = isPrivateBond ? 0.00015 : 0.001; // 0.015% for private, 0.1% for public
     const regime = selectedBondTx.regime;
     const txResult = calculateTransaction({
@@ -650,7 +670,6 @@ ${couponDetailsHTML}
   
   orderDateSellingEl.addEventListener("input", () => {
     if (selectedBondTx) {
-      updatePaymentDateFromOrderDate(orderDateSellingEl, paymentDateSellingEl, selectedBondTx.listing === "private");
       recalcTransaction();
     }
   });
@@ -660,12 +679,11 @@ ${couponDetailsHTML}
 
   bondSelectTxEl.addEventListener("change", onBondSelectTx);
   numBondsEl.addEventListener("input", recalcTransaction);
-  paymentDateBuyingEl.addEventListener("input", recalcTransaction);
-  paymentDateBuyingEl.addEventListener("change", recalcTransaction);
+  orderDateBuyingEl.addEventListener("input", recalcTransaction);
+  orderDateBuyingEl.addEventListener("change", recalcTransaction);
   discountYieldEl.addEventListener("input", recalcTransaction);
   discountYieldEl.addEventListener("change", recalcTransaction);
-  paymentDateSellingEl.addEventListener("input", recalcTransaction);
-  paymentDateSellingEl.addEventListener("change", recalcTransaction);
+  orderDateSellingEl.addEventListener("change", recalcTransaction);
   holdingRateEl.addEventListener("input", recalcTransaction);
   holdingRateEl.addEventListener("change", recalcTransaction);
   coverFeesEl.addEventListener("change", recalcTransaction);

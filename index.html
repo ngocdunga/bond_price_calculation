@@ -108,15 +108,11 @@
         <input id="numBonds" type="number" value="100" step="1" />
         <label>Leg 1 - Order Date (Buying) (DD/MM/YYYY)</label>
         <input id="orderDateBuying" type="text" />
-        <label>Leg 1 - Payment Date (Buying) (DD/MM/YYYY)</label>
-        <input id="paymentDateBuying" type="text" />
         <label>Leg 1 - Discount Yield (% / year)</label>
         <input id="discountYield" type="number" value="5.5" step="0.01" />
         
         <label>Leg 2 - Expected Order Date (Selling) (DD/MM/YYYY)</label>
         <input id="orderDateSelling" type="text" />
-        <label>Leg 2 - Expected Payment Date (Selling) (DD/MM/YYYY)</label>
-        <input id="paymentDateSelling" type="text" />
         
         <label>Leg 2 - Expected Holding Interest Rate (% / year)</label>
         <input id="holdingRate" type="number" value="4.3" step="0.01" />
@@ -180,7 +176,7 @@
       populateBondSelect("bondSelect", bondsData.bonds);
       populateBondSelect("bondSelectYTM", bondsData.bonds);
       populateBondSelect("bondSelectTx", bondsData.bonds);
-      setTodaySettlement("settle", "settleYTM", "orderDateBuying", "paymentDateBuying", "orderDateSelling", "paymentDateSelling", "offeringDate");
+      setTodaySettlement("settle", "settleYTM", "orderDateBuying", "orderDateSelling", "offeringDate");
       
       initIntroTab();
       initPriceTab();
