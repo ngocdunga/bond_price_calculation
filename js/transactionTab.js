@@ -3,11 +3,12 @@ import {
   parseDateVN,
   formatDateVN,
   getVacationInfo,
+  getNextWorkingDay,
   calculateAverageBankRate,
   calculateTransaction,
 } from "../utils.js";
 
-import { bondsData, bankRatesData } from "./dataLoader.js";
+import { bondsData, bankRatesData, vacationDates } from "./dataLoader.js";
 import { updateBondInfo } from "./priceTab.js";
 
 let selectedBondTx = null;
@@ -299,14 +300,37 @@ export function initTransactionTab() {
   const bankRateInfoTxEl = document.getElementById("bankRateInfoTx");
   const recordingWarningTxEl = document.getElementById("recordingWarningTx");
   const numBondsEl = document.getElementById("numBonds");
+  const orderDateBuyingEl = document.getElementById("orderDateBuying");
   const paymentDateBuyingEl = document.getElementById("paymentDateBuying");
   const discountYieldEl = document.getElementById("discountYield");
+  const orderDateSellingEl = document.getElementById("orderDateSelling");
   const paymentDateSellingEl = document.getElementById("paymentDateSelling");
   const holdingRateEl = document.getElementById("holdingRate");
   const coverFeesEl = document.getElementById("coverFees");
   const institutionPurchaseEl = document.getElementById("institutionPurchase");
   const outTx = document.getElementById("outTx");
   const profitTx = document.getElementById("profitTx");
+
+  function updatePaymentDateFromOrderDate(orderDateEl, paymentDateEl, isPrivateBond) {
+    const orderDateStr = orderDateEl.value;
+    if (!orderDateStr) return;
+
+    const orderDate = parseDateVN(orderDateStr);
+    if (!orderDate) return;
+
+    let paymentDate;
+    if (isPrivateBond) {
+      // Private bond: payment date = order date
+      paymentDate = new Date(orderDate);
+    } else {
+      // Public bond: payment date = next working day
+      paymentDate = getNextWorkingDay(orderDate, vacationDates);
+    }
+
+    if (paymentDate) {
+      paymentDateEl.value = formatDateVN(paymentDate);
+    }
+  }
 
   function onBondSelectTx() {
     const bondCode = bondSelectTxEl.value;
@@ -337,9 +361,11 @@ export function initTransactionTab() {
     const numBonds = +numBondsEl.value;
     const faceValue = selectedBondTx.faceValue;
 
+    const orderDateBuying = parseDateVN(orderDateBuyingEl.value);
     const paymentDateBuying = parseDateVN(paymentDateBuyingEl.value);
     const discountYield = +discountYieldEl.value;
 
+    const orderDateSelling = parseDateVN(orderDateSellingEl.value);
     const paymentDateSelling = parseDateVN(paymentDateSellingEl.value);
     const holdingRate = +holdingRateEl.value;
 
@@ -358,8 +384,10 @@ export function initTransactionTab() {
       return;
     }
 
-    const buyVacationInfo = getVacationInfo(paymentDateBuying);
-    const sellVacationInfo = getVacationInfo(paymentDateSelling);
+    const buyOrderVacationInfo = getVacationInfo(orderDateBuying);
+    const buyPaymentVacationInfo = getVacationInfo(paymentDateBuying);
+    const sellOrderVacationInfo = getVacationInfo(orderDateSelling);
+    const sellPaymentVacationInfo = getVacationInfo(paymentDateSelling);
 
     const baseBankRate = calculateAverageBankRate(
       selectedBondTx.referenceBank,
@@ -404,19 +432,35 @@ export function initTransactionTab() {
       );
     }
 
-    if (buyVacationInfo) {
+    if (buyOrderVacationInfo) {
       warnings.push(
-        `LEG 1: Buying date ${formatDateVN(paymentDateBuying)} is during vacation ${buyVacationInfo.name}` +
-          (buyVacationInfo.duration > 1
-            ? ` (day ${buyVacationInfo.dayIndex} of ${buyVacationInfo.duration})`
+        `LEG 1: Order date ${formatDateVN(orderDateBuying)} is during vacation ${buyOrderVacationInfo.name}` +
+          (buyOrderVacationInfo.duration > 1
+            ? ` (day ${buyOrderVacationInfo.dayIndex} of ${buyOrderVacationInfo.duration})`
             : "")
       );
     }
-    if (sellVacationInfo) {
+    if (buyPaymentVacationInfo) {
       warnings.push(
-        `LEG 2: Selling date ${formatDateVN(paymentDateSelling)} is during vacation ${sellVacationInfo.name}` +
-          (sellVacationInfo.duration > 1
-            ? ` (day ${sellVacationInfo.dayIndex} of ${sellVacationInfo.duration})`
+        `LEG 1: Payment date ${formatDateVN(paymentDateBuying)} is during vacation ${buyPaymentVacationInfo.name}` +
+          (buyPaymentVacationInfo.duration > 1
+            ? ` (day ${buyPaymentVacationInfo.dayIndex} of ${buyPaymentVacationInfo.duration})`
+            : "")
+      );
+    }
+    if (sellOrderVacationInfo) {
+      warnings.push(
+        `LEG 2: Order date ${formatDateVN(orderDateSelling)} is during vacation ${sellOrderVacationInfo.name}` +
+          (sellOrderVacationInfo.duration > 1
+            ? ` (day ${sellOrderVacationInfo.dayIndex} of ${sellOrderVacationInfo.duration})`
+            : "")
+      );
+    }
+    if (sellPaymentVacationInfo) {
+      warnings.push(
+        `LEG 2: Payment date ${formatDateVN(paymentDateSelling)} is during vacation ${sellPaymentVacationInfo.name}` +
+          (sellPaymentVacationInfo.duration > 1
+            ? ` (day ${sellPaymentVacationInfo.dayIndex} of ${sellPaymentVacationInfo.duration})`
             : "")
       );
     }
@@ -475,6 +519,10 @@ export function initTransactionTab() {
 <table class="table">
   <tbody>
     <tr>
+      <th>Order date</th>
+      <td>${orderDateBuyingEl.value || '—'}</td>
+    </tr>
+    <tr>
       <th>Payment date</th>
       <td>${formatDateVN(paymentDateBuying)}</td>
     </tr>
@@ -506,6 +554,10 @@ ${couponDetailsHTML}
 <h4 style="margin-top: 16px">Leg 2 - Expected Selling Information</h4>
 <table class="table">
   <tbody>
+    <tr>
+      <th>Expected order date</th>
+      <td>${orderDateSellingEl.value || '—'}</td>
+    </tr>
     <tr>
       <th>Expected payment date</th>
       <td>${formatDateVN(paymentDateSelling)}</td>
@@ -588,6 +640,22 @@ ${couponDetailsHTML}
     updateTransactionChart(txResult);
   }
 
+  // Order date listeners - auto-update payment dates
+  orderDateBuyingEl.addEventListener("input", () => {
+    if (selectedBondTx) {
+      updatePaymentDateFromOrderDate(orderDateBuyingEl, paymentDateBuyingEl, selectedBondTx.listing === "private");
+      recalcTransaction();
+    }
+  });
+  
+  orderDateSellingEl.addEventListener("input", () => {
+    if (selectedBondTx) {
+      updatePaymentDateFromOrderDate(orderDateSellingEl, paymentDateSellingEl, selectedBondTx.listing === "private");
+      recalcTransaction();
+    }
+  });
+
+  
   initTransactionChart();
 
   bondSelectTxEl.addEventListener("change", onBondSelectTx);

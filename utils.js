@@ -129,6 +129,44 @@ function subtractWorkingDays(dt, days, vacationData) {
   return result;
 }
 
+// Get next working day (skip weekends and holidays)
+export function getNextWorkingDay(dt, vacationData = null) {
+  if (!dt || !(dt instanceof Date)) {
+    return null;
+  }
+
+  let result = new Date(dt);
+  const holidaySet = new Set();
+
+  if (vacationData) {
+    Object.entries(vacationData).forEach(([startStr, info]) => {
+      const startDate = parseDateVN(startStr);
+      const duration = info.Last || 1;
+
+      for (let i = 0; i < duration; i++) {
+        const d = new Date(startDate);
+        d.setUTCDate(d.getUTCDate() + i);
+        holidaySet.add(formatDateVN(d));
+      }
+    });
+  }
+
+  // Move forward until we find a working day
+  while (true) {
+    const day = result.getUTCDay();
+    const isWeekend = day === 0 || day === 6;
+    const isHoliday = holidaySet.has(formatDateVN(result));
+
+    if (!isWeekend && !isHoliday) {
+      break;
+    }
+
+    result.setUTCDate(result.getUTCDate() + 1);
+  }
+
+  return result;
+}
+
 function actualDays(d1, d2) {
   return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
 }
