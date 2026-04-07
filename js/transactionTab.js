@@ -2,6 +2,7 @@ import {
   vndInt,
   parseDateVN,
   formatDateVN,
+  getVacationInfo,
   calculateAverageBankRate,
   calculateTransaction,
 } from "../utils.js";
@@ -357,6 +358,9 @@ export function initTransactionTab() {
       return;
     }
 
+    const buyVacationInfo = getVacationInfo(paymentDateBuying);
+    const sellVacationInfo = getVacationInfo(paymentDateSelling);
+
     const baseBankRate = calculateAverageBankRate(
       selectedBondTx.referenceBank,
       bankRatesData.rates
@@ -397,6 +401,23 @@ export function initTransactionTab() {
     if (txResult.leg2.inRecordingPeriod) {
       warnings.push(
         `LEG 2: Within recording period for coupon on ${formatDateVN(txResult.leg2.upcomingCouponDate)} (started ${formatDateVN(txResult.leg2.recordingStartDate)})`
+      );
+    }
+
+    if (buyVacationInfo) {
+      warnings.push(
+        `LEG 1: Buying date ${formatDateVN(paymentDateBuying)} is during vacation ${buyVacationInfo.name}` +
+          (buyVacationInfo.duration > 1
+            ? ` (day ${buyVacationInfo.dayIndex} of ${buyVacationInfo.duration})`
+            : "")
+      );
+    }
+    if (sellVacationInfo) {
+      warnings.push(
+        `LEG 2: Selling date ${formatDateVN(paymentDateSelling)} is during vacation ${sellVacationInfo.name}` +
+          (sellVacationInfo.duration > 1
+            ? ` (day ${sellVacationInfo.dayIndex} of ${sellVacationInfo.duration})`
+            : "")
       );
     }
 

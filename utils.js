@@ -53,6 +53,31 @@ export function formatDateVN(dt) {
   return `${d}/${m}/${y}`;
 }
 
+export function getVacationInfo(date) {
+  if (!date || !(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const target = formatDateVN(date);
+  for (const [startStr, info] of Object.entries(vacationDates || {})) {
+    const duration = info.Last || 1;
+    const startDate = parseDateVN(startStr);
+    for (let offset = 0; offset < duration; offset++) {
+      const current = new Date(startDate);
+      current.setUTCDate(current.getUTCDate() + offset);
+      if (formatDateVN(current) === target) {
+        return {
+          name: info.Name,
+          startDate: startStr,
+          dayIndex: offset + 1,
+          duration,
+        };
+      }
+    }
+  }
+  return null;
+}
+
 // ================= DATE MATH =================
 
 function addMonthsUTC(dt, months) {
