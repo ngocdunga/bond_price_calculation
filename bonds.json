@@ -35,7 +35,7 @@
       "maturity": "04/07/2026",
       "recordDays": 10,
       "frequency": 2,
-      "faceValue": 100000000,
+      "faceValue": 100000,
       "referenceBank": [],
       "regime": "NORMAL",
       "couponPrecision": 0
