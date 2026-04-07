@@ -151,7 +151,10 @@ export function getNextWorkingDay(dt, vacationData = null) {
     });
   }
 
-  // Move forward until we find a working day
+  // Move forward by at least one day first
+  result.setUTCDate(result.getUTCDate() + 1);
+
+  // Then find the next working day
   while (true) {
     const day = result.getUTCDay();
     const isWeekend = day === 0 || day === 6;
