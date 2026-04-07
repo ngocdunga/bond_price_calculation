@@ -502,7 +502,7 @@ export function initTransactionTab() {
       txResult.profit.couponFlows.length > 0
     ) {
       couponDetailsHTML = `
-        <h4 style="margin-top: 16px">Coupon Payments During Holding Period</h4>
+        <h4 style="margin-top: 4px">Coupon Payments During Holding Period</h4>
         <p class="muted">Bond Type: <strong>${isPrivateBond ? 'Private' : 'Public'}</strong> | Tax Rate: <strong>${taxRateDisplay}</strong></p>
         <table class="table">
           <thead>
@@ -571,7 +571,7 @@ export function initTransactionTab() {
 
 ${couponDetailsHTML}
 
-<h4 style="margin-top: 16px">Leg 2 - Expected Selling Information</h4>
+<h4 style="margin-top: 4px">Leg 2 - Expected Selling Information</h4>
 <table class="table">
   <tbody>
     <tr>
