@@ -425,6 +425,7 @@ export function initTransactionTab() {
       recordingWarningTxEl.innerHTML = warnings.join("<br>");
       recordingWarningTxEl.classList.remove("hidden");
     } else {
+      recordingWarningTxEl.innerHTML = "";
       recordingWarningTxEl.classList.add("hidden");
     }
 
