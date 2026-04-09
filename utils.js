@@ -195,7 +195,6 @@ export function isInRecordingPeriod(
 // ================= SCHEDULE =================
 
 function buildSchedule(issue, maturity, freq, vacationData, regime = "NORMAL") {
-  console.log("Building schedule with regime:", regime);
   const step = 12 / freq;
   let dates = [];
   let cur = new Date(issue); // Start from issue date
@@ -335,9 +334,7 @@ export function priceFloatingBond({
   recordingDays = 10,
   regime = "NORMAL",
 }) {
-  console.log("Pricing floating bond with base bank rate:", baseBankRate);
   const schedule = buildSchedule(issue, maturity, freq, vacationDates, regime);
-  console.log("Payment schedule:", schedule);
 
   const { prev, next } = findPrevNext(schedule, settle);
 
@@ -420,10 +417,7 @@ export function priceFloatingBond({
 
     const pv = cf * df(payDate);
     dirty += pv;
-    // dirty = Math.round(Number(dirty.toFixed(6)));
-    console.log(
-      `CF on ${formatDateVN(payDate)}: cf=${cf}, pv=${pv}, dirty=${dirty}`,
-    );
+
     cfs.push({
       date: formatDateVN(payDate),
       yf,
@@ -663,13 +657,10 @@ export function calculateTransaction({
   const daysHolding = actualDays(paymentDateBuying, paymentDateSelling);
   let targetAmount;
   if (coverFees) {
-    targetAmount = Math.round(
-      leg1SettlementAmount * (1 + (holdingRate / 100) * (daysHolding / 365)) +
-        netCoupons
-    );
+    targetAmount = Math.round(leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365)));
   }
   else {
-    targetAmount = Math.round(leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365)));
+    targetAmount = Math.round(leg1SettlementAmount * (1 + (holdingRate / 100) * (daysHolding / 365)));
   }
 
   // ========== LEG 2 (SELLING) ==========
