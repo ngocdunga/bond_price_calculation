@@ -559,6 +559,26 @@
       "referenceBank": [],
       "regime": "NORMAL",
       "couponPrecision": 2
+    },
+    {
+      "code": "VIC12511",
+      "interestSchedule": [
+        {
+          "payment": 1,
+          "rate": 0.12,
+          "isFloat": false
+        }
+      ],
+      "listing": "private",
+      "category": "corporate",
+      "issueDate": "27/11/2025",
+      "maturity": "27/11/2028",
+      "recordDays": 10,
+      "frequency": 2,
+      "faceValue": 100000000,
+      "referenceBank": [],
+      "regime": "NORMAL",
+      "couponPrecision": 2
     }
   ]
 }
