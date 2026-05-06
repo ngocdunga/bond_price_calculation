@@ -579,6 +579,86 @@
       "referenceBank": [],
       "regime": "NORMAL",
       "couponPrecision": 2
-    }
+    },
+    {
+      "code": "NLG12403",
+      "interestSchedule": [
+        {
+          "payment": 1,
+          "rate": 0.0978,
+          "isFloat": false
+        },
+        {
+          "payment": 5,
+          "rate": 0.09855,
+          "isFloat": false
+        },
+        {
+          "payment": 6,
+          "rate": 0.0993,
+          "isFloat": false
+        },
+        {
+          "payment": 7,
+          "rate": 0.10755,
+          "isFloat": false
+        },
+        {
+          "payment": 8,
+          "rate": 0.0473,
+          "isFloat": true
+        }
+      ],
+      "listing": "private",
+      "category": "corporate",
+      "issueDate": "22/08/2024",
+      "maturity": "22/08/2027",
+      "recordDays": 11,
+      "frequency": 4,
+      "faceValue": 100000000,
+      "referenceBank": ["MBB", "VPB", "ACB", "TCB"],
+      "regime": "NORMAL",
+      "couponPrecision": 3
+    },
+    {
+      "code": "BCM12402",
+      "interestSchedule": [
+        {
+          "payment": 1,
+          "rate": 0.105,
+          "isFloat": false
+        },
+        {
+          "payment": 5,
+          "rate": 0.107,
+          "isFloat": false
+        },
+        {
+          "payment": 6,
+          "rate": 0.107,
+          "isFloat": false
+        },
+        {
+          "payment": 7,
+          "rate": 0.112,
+          "isFloat": false
+        },
+        {
+          "payment": 8,
+          "rate": 0.031,
+          "isFloat": true
+        }
+      ],
+      "listing": "private",
+      "category": "corporate",
+      "issueDate": "17/06/2024",
+      "maturity": "17/06/2027",
+      "recordDays": 5,
+      "frequency": 4,
+      "faceValue": 100000000,
+      "referenceBank": ["MBBCIB"],
+      "regime": "NORMAL",
+      "couponPrecision": 3
+    },
   ]
 }
