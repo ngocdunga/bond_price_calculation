@@ -316,7 +316,7 @@
         "CTG"
       ],
       "regime": "NORMAL",
-      "couponPrecision": 0
+      "couponPrecision": 2
     },
     {
       "code": "SHB125017",
