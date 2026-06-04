@@ -531,7 +531,7 @@
       "couponPrecision": 0
     },
     {
-      "code": "CTD12501",
+      "code": "CTD126006",
       "interestSchedule": [
         {
           "payment": 1,
@@ -543,6 +543,7 @@
       "category": "corporate",
       "issueDate": "30/01/2026",
       "maturity": "30/01/2029",
+      "callDate": "30/01/2027",
       "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000,
