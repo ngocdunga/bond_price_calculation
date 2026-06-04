@@ -172,6 +172,11 @@
         },
         {
           "payment": 5,
+          "rate": 0.102,
+          "isFloat": false
+        },
+        {
+          "payment": 6,
           "rate": 0.043,
           "isFloat": true
         }
