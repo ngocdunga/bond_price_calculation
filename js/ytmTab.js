@@ -57,7 +57,7 @@ export function initYTMTab() {
     const settle = parseDateVN(settleYTMEl.value);
     const issue = parseDateVN(selectedBondYTM.issueDate);
     const maturity = parseDateVN(selectedBondYTM.maturity);
-
+    console.log(maturity)
     if (!issue || !settle || !maturity) {
       outYTM.textContent = "Invalid date format (DD/MM/YYYY)";
       recordingWarningYTMEl.classList.add("hidden");
