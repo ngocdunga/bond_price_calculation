@@ -503,7 +503,7 @@
       "category": "corporate",
       "issueDate": "05/01/2026",
       "maturity": "05/01/2029",
-      "recordDays": 10,
+      "recordDays": 6,
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": [],
