@@ -508,7 +508,7 @@
       "faceValue": 100000000,
       "referenceBank": [],
       "regime": "NORMAL",
-      "couponPrecision": 0
+      "couponPrecision": 2
     },
     {
       "code": "VLH12501",
