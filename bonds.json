@@ -21,26 +21,6 @@
       "couponPrecision": 0
     },
     {
-      "code": "BAF123020",
-      "interestSchedule": [
-        {
-          "payment": 1,
-          "rate": 0.105,
-          "isFloat": false
-        }
-      ],
-      "listing": "public",
-      "category": "corporate",
-      "issueDate": "04/07/2023",
-      "maturity": "04/07/2026",
-      "recordDays": 10,
-      "frequency": 2,
-      "faceValue": 100000,
-      "referenceBank": [],
-      "regime": "NORMAL",
-      "couponPrecision": 0
-    },
-    {
       "code": "CMX123035",
       "interestSchedule": [
         {
