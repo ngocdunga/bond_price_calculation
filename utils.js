@@ -672,13 +672,29 @@ export function calculateTransaction({
   let leg2TotalReceived;
 
   if (coverFees) {
+    if (isInstitution) {
+    const transferFee = Math.min(300000, numBonds * 0.3);
+    leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / (1 - transactionFeeRate);
+    leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
+    leg2SettlementAmount = leg2PricePerBond * numBonds;
+
+    leg2TransactionFee = leg2SettlementAmount * transactionFeeRate;
+    leg2TransferFee = transferFee;
+      leg2TransferTax = 0.0
+    leg2TotalReceived =
+      leg2SettlementAmount -
+      leg2TransactionFee -
+      leg2TransferFee +
+      netCoupons;
+    } else 
+    {
     const transferFee = Math.min(300000, numBonds * 0.3);
     leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / (1 - transactionFeeRate - 0.001);
     leg2PricePerBond = Math.round(leg2SettlementAmount / numBonds);
     leg2SettlementAmount = leg2PricePerBond * numBonds;
 
     leg2TransactionFee = leg2SettlementAmount * transactionFeeRate;
-    leg2TransferTax = leg2SettlementAmount * 0;
+    leg2TransferTax = leg2SettlementAmount *  0.001;
     leg2TransferFee = transferFee;
 
     leg2TotalReceived =
