@@ -678,7 +678,7 @@ export function calculateTransaction({
     leg2SettlementAmount = leg2PricePerBond * numBonds;
 
     leg2TransactionFee = leg2SettlementAmount * transactionFeeRate;
-    leg2TransferTax = leg2SettlementAmount * 0.001;
+    leg2TransferTax = leg2SettlementAmount * 0;
     leg2TransferFee = transferFee;
 
     leg2TotalReceived =
