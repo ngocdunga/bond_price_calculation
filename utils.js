@@ -703,6 +703,7 @@ export function calculateTransaction({
       leg2TransferTax -
       leg2TransferFee +
       netCoupons;
+      }
   } else {
     leg2SettlementAmount = targetAmount - netCoupons;
     leg2PricePerBond = leg2SettlementAmount / numBonds;
