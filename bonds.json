@@ -670,6 +670,56 @@
       "referenceBank": ["VCB", "CTG", "BID", "ARG"],
       "regime": "NORMAL",
       "couponPrecision": 3
+    },
+        {
+      "code": "MSN123009",
+      "interestSchedule": [
+        {
+          "payment": 1,
+          "rate": 0.095,
+          "isFloat": false
+        },
+        {
+          "payment": 3,
+          "rate": 0.0875,
+          "isFloat": false
+        },
+        {
+          "payment": 4,
+          "rate": 0.0865,
+          "isFloat": false
+        },
+        {
+          "payment": 5,
+          "rate": 0.0865,
+          "isFloat": false
+        },
+        {
+          "payment": 6,
+          "rate": 0.0865,
+          "isFloat": false
+        },
+                {
+          "payment": 7,
+          "rate": 0.09175,
+          "isFloat": false
+        },
+        {
+          "payment": 8,
+          "rate": 0.03975,
+          "isFloat": true
+        }
+      ],
+      "listing": "public",
+      "category": "corporate",
+      "issueDate": "22/02/2023",
+      "maturity": "22/02/2028",
+      "recordDays": 7,
+      "frequency": 2,
+      "faceValue": 100000,
+      "referenceBank": ["VCB", "CTG", "BID", "ARG"],
+      "regime": "NORMAL",
+      "couponPrecision": 3
     }
   ]
 }
