@@ -714,7 +714,7 @@
       "category": "corporate",
       "issueDate": "22/02/2023",
       "maturity": "22/02/2028",
-      "recordDays": 7,
+      "recordDays": 10,
       "frequency": 2,
       "faceValue": 100000,
       "referenceBank": ["VCB", "CTG", "BID", "ARG"],
