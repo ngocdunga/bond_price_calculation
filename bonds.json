@@ -725,6 +725,36 @@
       "referenceBank": ["VCB", "CTG", "BID", "ARG"],
       "regime": "NORMAL",
       "couponPrecision": 3
+    },
+    {
+      "code": "NAB125004",
+      "interestSchedule": [
+        {
+          "payment": 1,
+          "rate": 0.08,
+          "isFloat": false
+        },
+        {
+          "payment": 2,
+          "rate": 0.028,
+          "isFloat": true
+        }
+      ],
+      "listing": "public",
+      "category": "bank",
+      "issueDate": "30/12/2025",
+      "maturity": "30/12/2027",
+      "recordDays": 10,
+      "frequency": 1,
+      "faceValue": 100000,
+      "referenceBank": [
+        "ARG",
+        "VCB",
+        "BID",
+        "CTG"
+      ],
+      "regime": "NORMAL",
+      "couponPrecision": 4
     }
   ]
 }
