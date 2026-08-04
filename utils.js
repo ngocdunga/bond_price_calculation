@@ -605,9 +605,9 @@ export function calculateTransaction({
 
   const leg1PricePerBond = Math.round(leg1Bond.dirty + 0.5);
   const leg1SettlementAmount = leg1PricePerBond * numBonds;
-  const leg1TransactionFee = Math.round(leg1SettlementAmount * transactionFeeRate);
+  const leg1TransactionFee = coverFeesTaxes ? Math.round(leg1SettlementAmount * transactionFeeRate) : 0;
 
-  const leg1TotalInvestment = leg1SettlementAmount + (coverFeesTaxes ? leg1TransactionFee : 0);
+  const leg1TotalInvestment = leg1SettlementAmount + leg1TransactionFee;
 
   // ========== CALCULATE COUPONS RECEIVED ==========
   const schedule = buildSchedule(issue, maturity, freq, vacationDates, regime);
