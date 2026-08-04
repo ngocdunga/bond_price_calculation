@@ -304,7 +304,7 @@ export function initTransactionTab() {
   const discountYieldEl = document.getElementById("discountYield");
   const orderDateSellingEl = document.getElementById("orderDateSelling");
   const holdingRateEl = document.getElementById("holdingRate");
-  const coverFeesEl = document.getElementById("coverFees");
+  const coverFeesTaxesEl = document.getElementById("coverFeesTaxes");
   const institutionPurchaseEl = document.getElementById("institutionPurchase");
   const outTx = document.getElementById("outTx");
   const profitTx = document.getElementById("profitTx");
@@ -373,7 +373,7 @@ export function initTransactionTab() {
     const orderDateSelling = parseDateVN(orderDateSellingEl.value);
     const holdingRate = +holdingRateEl.value;
 
-    const coverFees = coverFeesEl.checked;
+    const coverFeesTaxes = coverFeesTaxesEl.checked;
     const isInstitution = institutionPurchaseEl.checked;
 
     // Calculate payment dates from order dates
@@ -427,7 +427,7 @@ export function initTransactionTab() {
       discountYield,
       paymentDateSelling,
       holdingRate,
-      coverFees,
+      coverFeesTaxes,
       isInstitution,
       transactionFeeRate,
       freq: selectedBondTx.frequency,
@@ -559,7 +559,7 @@ export function initTransactionTab() {
       <td>${vndInt.format(txResult.leg1.settlementAmount)}</td>
     </tr>
     <tr>
-      <th>Transaction fee (${feeRateDisplay})</th>
+      <th>Transaction fee (${feeRateDisplay}) ${coverFeesTaxes ? "(adjusted for fees)" : ""}</th>
       <td>${vndInt.format(txResult.leg1.transactionFee)}</td>
     </tr>
     <tr>
@@ -591,7 +591,7 @@ ${couponDetailsHTML}
       <td>${vndInt.format(txResult.profit.targetAmount)}</td>
     </tr>
     <tr>
-      <th>Expected selling price (per bond) ${coverFees ? "(adjusted for fees)" : ""}</th>
+      <th>Expected selling price (per bond) ${coverFeesTaxes ? "(adjusted for fees)" : ""}</th>
       <td class="highlight-yellow">${vndInt.format(txResult.leg2.pricePerBond)}</td>
     </tr>
     <tr>
@@ -615,7 +615,7 @@ ${couponDetailsHTML}
       <td>${vndInt.format(txResult.leg2.transferFee)}</td>
     </tr>
     <tr>
-      <th>Total expected received (H = G ${coverFees ? "- fees" : ""} + coupons)</th>
+      <th>Total expected received (H = G ${coverFeesTaxes ? "- fees" : ""} + coupons)</th>
       <td class="highlight-yellow"><strong>${vndInt.format(txResult.leg2.totalReceived)}</strong></td>
     </tr>
   </tbody>
@@ -686,6 +686,6 @@ ${couponDetailsHTML}
   orderDateSellingEl.addEventListener("change", recalcTransaction);
   holdingRateEl.addEventListener("input", recalcTransaction);
   holdingRateEl.addEventListener("change", recalcTransaction);
-  coverFeesEl.addEventListener("change", recalcTransaction);
+  coverFeesTaxesEl.addEventListener("change", recalcTransaction);
   institutionPurchaseEl.addEventListener("change", recalcTransaction);
 }
