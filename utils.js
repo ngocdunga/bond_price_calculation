@@ -577,7 +577,7 @@ export function calculateTransaction({
   discountYield,
   paymentDateSelling,
   holdingRate,
-  coverFees,
+  coverFeesTaxes,
   isInstitution = false,
   transactionFeeRate = 0.001, // Default 0.1%, can be 0.015% for private bonds
   freq,
@@ -606,13 +606,14 @@ export function calculateTransaction({
   const leg1PricePerBond = Math.round(leg1Bond.dirty + 0.5);
   const leg1SettlementAmount = leg1PricePerBond * numBonds;
   const leg1TransactionFee = Math.round(leg1SettlementAmount * transactionFeeRate);
-  const leg1TotalInvestment = leg1SettlementAmount + leg1TransactionFee;
+
+  const leg1TotalInvestment = leg1SettlementAmount + (coverFeesTaxes ? leg1TransactionFee : 0);
 
   // ========== CALCULATE COUPONS RECEIVED ==========
   const schedule = buildSchedule(issue, maturity, freq, vacationDates, regime);
   let couponsReceived = 0;
   const couponFlows = []; // NEW: Track individual coupon payments
-  const couponTaxRate = isInstitution ? 0 : 0.05;
+  const couponTaxRate = !coverFeesTaxes || isInstitution ? 0 : 0.05;
 
   for (let i = 0; i < schedule.length; i++) {
     const couponDate = schedule[i];
@@ -656,12 +657,8 @@ export function calculateTransaction({
   // ========== CALCULATE TARGET AMOUNT ==========
   const daysHolding = actualDays(paymentDateBuying, paymentDateSelling);
   let targetAmount;
-  if (coverFees) {
-    targetAmount = Math.round(leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365)));
-  }
-  else {
-    targetAmount = Math.round(leg1SettlementAmount * (1 + (holdingRate / 100) * (daysHolding / 365)));
-  }
+  
+  targetAmount = Math.round(leg1TotalInvestment * (1 + (holdingRate / 100) * (daysHolding / 365)));
 
   // ========== LEG 2 (SELLING) ==========
   let leg2SettlementAmount;
@@ -671,7 +668,7 @@ export function calculateTransaction({
   let leg2TransferFee;
   let leg2TotalReceived;
 
-  if (coverFees) {
+  if (coverFeesTaxes) {
     if (isInstitution) {
     const transferFee = Math.min(300000, numBonds * 0.3);
     leg2SettlementAmount = (targetAmount - netCoupons + transferFee) / (1 - transactionFeeRate);
@@ -738,7 +735,7 @@ export function calculateTransaction({
     leg1TotalInvestment * (holdingRate / 100) * (daysHolding / 365);
 
   let totalProfit;
-  if (coverFees) {
+  if (coverFeesTaxes) {
     totalProfit = leg2TotalReceived - leg1TotalInvestment;
   } else {
     totalProfit =
