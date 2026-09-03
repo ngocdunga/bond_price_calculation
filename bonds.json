@@ -625,8 +625,8 @@
         },
         {
           "payment": 10,
-          "rate": 0.126,
-          "isFloat": false
+          "rate": 0.031,
+          "isFloat": true
         }
       ],
       "listing": "private",
