@@ -198,22 +198,33 @@
       "couponPrecision": 0
     },
     {
-      "code": "KBC12401",
+      "code": "KBCL12601",
       "interestSchedule": [
         {
           "payment": 1,
           "rate": 0.105,
           "isFloat": false
+        },
+        {
+          "payment": 3,
+          "rate": 0.042,
+          "isFloat": true,
+          "floorRate": 0.11
         }
       ],
       "listing": "private",
       "category": "corporate",
-      "issueDate": "28/08/2024",
-      "maturity": "28/08/2026",
+      "issueDate": "20/08/2026",
+      "maturity": "20/08/2029",
       "recordDays": 10,
       "frequency": 2,
-      "faceValue": 1000000000,
-      "referenceBank": [],
+      "faceValue": 100000000,
+      "referenceBank": [
+        "ARG",
+        "VCB",
+        "BID",
+        "CTG"
+      ],
       "regime": "NORMAL",
       "couponPrecision": 0
     },
