@@ -202,7 +202,7 @@
       "interestSchedule": [
         {
           "payment": 1,
-          "rate": 0.105,
+          "rate": 0.12,
           "isFloat": false
         },
         {
