@@ -590,7 +590,7 @@
       "regime": "NORMAL",
       "couponPrecision": 3
     },
-    {
+            {
       "code": "BCM12402",
       "interestSchedule": [
         {
@@ -615,8 +615,18 @@
         },
         {
           "payment": 8,
-          "rate": 0.031,
-          "isFloat": true
+          "rate": 0.117,
+          "isFloat": false
+        },
+                {
+          "payment": 9,
+          "rate": 0.126,
+          "isFloat": false
+        },
+        {
+          "payment": 10,
+          "rate": 0.126,
+          "isFloat": false
         }
       ],
       "listing": "private",
