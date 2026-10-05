@@ -13,7 +13,7 @@
       "category": "corporate",
       "issueDate": "15/05/2025",
       "maturity": "15/05/2028",
-      "recordDays": 10,
+      "recordDays": 7,
       "frequency": 2,
       "faceValue": 100000000,
       "referenceBank": [],
