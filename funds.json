@@ -3,14 +3,21 @@
     {
       "name": "KIS - existing total",
       "regime": "KIS",
-      "purchaseShares": 67610000,
+      "purchaseShares": 7570000,
       "heldShares": null,
       "heldBonds": null
     },
         {
-      "name": "Normal - existing total",
-      "regime": "normal",
-      "purchaseShares": 67610000,
+      "name": "SIP - existing total",
+      "regime": "SIP",
+      "purchaseShares": 15150000,
+      "heldShares": null,
+      "heldBonds": null
+    },
+    {
+      "name": "KIMMA - existing total",
+      "regime": "KIMMA",
+      "purchaseShares": 44890000,
       "heldShares": null,
       "heldBonds": null
     },
