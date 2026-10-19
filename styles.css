@@ -218,3 +218,26 @@ canvas {
   background: #e3f2fd;
   font-weight: 600;
 }
+
+.tabs { flex-wrap: wrap; }
+.action-button {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #2196f3;
+  color: white;
+  cursor: pointer;
+}
+.action-button:disabled { opacity: .6; cursor: wait; }
+.ratio-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.collateral-result { padding: 10px; }
+.collateral-result .table { overflow-wrap: anywhere; }
+.table-scroll { overflow-x: auto; }
+#collateralHistory .table { min-width: 560px; }
+@media (max-width: 720px) {
+  .grid, .ratio-grid { grid-template-columns: 1fr; }
+  .site-header { position: static; text-align: right; }
+  .site-logo { height: 60px; }
+  .tab { flex: 1 1 160px; }
+}

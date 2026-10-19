@@ -782,6 +782,36 @@
       "regime": "NORMAL",
       "couponPrecision": 4
     },
+        {
+      "code": "NAB126025",
+      "interestSchedule": [
+        {
+          "payment": 1,
+          "rate": 0.087,
+          "isFloat": false
+        },
+        {
+          "payment": 2,
+          "rate": 0.028,
+          "isFloat": true
+        }
+      ],
+      "listing": "public",
+      "category": "bank",
+      "issueDate": "28/05/2025",
+      "maturity": "28/05/2028",
+      "recordDays": 10,
+      "frequency": 1,
+      "faceValue": 100000,
+      "referenceBank": [
+        "ARG",
+        "VCB",
+        "BID",
+        "CTG"
+      ],
+      "regime": "NORMAL",
+      "couponPrecision": 4
+    },
       {
       "code": "CTG12503",
       "interestSchedule": [

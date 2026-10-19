@@ -19,6 +19,7 @@
   <button class="tab" data-tab="price">Price Calculator (Given YTM)</button>
   <button class="tab" data-tab="ytm">YTM Calculator (Given Price)</button>
   <button class="tab" data-tab="transaction">Transaction Calculator</button>
+  <button class="tab" data-tab="collateral">Collateral Monitor</button>
 </div>
 
 <!-- INTRODUCTION TAB -->
@@ -141,6 +142,58 @@
       </div>
     </div>
     </div>
+    <!-- COLLATERAL MONITOR TAB -->
+    <div id="collateral-tab" class="tab-content">
+      <div class="grid">
+        <div class="box">
+          <h3>Investment and collateral inputs</h3>
+          <p class="muted">Normal and K250 share quantities are loaded from funds.json.</p>
+          <div id="collateralFundsStatus" class="muted" role="status"></div>
+          <label for="collateralPurchasePrice">Purchase price per share (VND)</label>
+          <input id="collateralPurchasePrice" type="number" min="0" step="1" value="13200" />
+          <label for="collateralBondCode">Bond code</label>
+          <select id="collateralBondCode">
+            <option value="">-- Select a bond --</option>
+          </select>
+          <label for="collateralSettlement">Bond settlement date (DD/MM/YYYY)</label>
+          <input id="collateralSettlement" type="text" placeholder="DD/MM/YYYY" inputmode="numeric" />
+          <div id="collateralBondPriceInfo" class="bond-info">Select a bond to calculate par + accrued interest.</div>
+          <label for="collateralStockCode">Stock code</label>
+          <input id="collateralStockCode" type="text" value="NAB" maxlength="12" autocomplete="off" />
+          <button id="collateralFetch" type="button" class="action-button">Fetch 20 trading sessions</button>
+          <div id="collateralFetchStatus" class="muted" role="status" aria-live="polite"></div>
+          <h4>Collateral ratio</h4>
+          <label for="collateralMinCr">Minimum CR (%)</label>
+          <input id="collateralMinCr" type="number" min="0.01" step="0.01" value="100" />
+          <div class="ratio-grid">
+            <div>
+              <strong>Normal</strong>
+              <label for="normalShareRatio">Shares (%)</label>
+              <input id="normalShareRatio" type="number" min="0" max="100" step="0.01" value="50" />
+              <label for="normalBondRatio">Bonds (%)</label>
+              <input id="normalBondRatio" type="number" min="0" max="100" step="0.01" value="50" />
+            </div>
+            <div>
+              <strong>K250</strong>
+              <label for="k250ShareRatio">Shares (%)</label>
+              <input id="k250ShareRatio" type="number" min="0" max="100" step="0.01" value="50" />
+              <label for="k250BondRatio">Bonds (%)</label>
+              <input id="k250BondRatio" type="number" min="0" max="100" step="0.01" value="50" />
+            </div>
+          </div>
+          <p class="muted">Each regime's shares and bonds percentages must total 100%.</p>
+        </div>
+        <div class="box">
+          <h3>Collateral results</h3>
+          <div id="collateralResults" aria-live="polite">Loading fund quantities…</div>
+          <p class="muted">Secured obligation = investment amount × 1.15². Required collateral = secured obligation × minimum CR / 100. Shares and bonds are rounded up to whole units. Bond price per unit = par + accrued interest on the settlement date.</p>
+        </div>
+      </div>
+      <div class="box" style="margin-top: 16px;">
+        <h3 id="collateralHistoryTitle">Stock price history</h3>
+        <div id="collateralHistory"><p class="muted">Fetch stock history to inspect the 20 trading sessions.</p></div>
+      </div>
+    </div>
 <!-- 1️⃣ Chart.js FIRST -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -154,6 +207,7 @@
   import { initPriceTab } from "./js/priceTab.js";
   import { initYTMTab } from "./js/ytmTab.js";
   import { initTransactionTab } from "./js/transactionTab.js";
+  import { initCollateralTab } from "./js/collateralTab.js";
 
   // Tab switching
   const tabs = document.querySelectorAll(".tab");
@@ -172,10 +226,12 @@
   // Initialize app
   (async () => {
     try {
-      const { bondsData } = await loadData();
+      const { bondsData, bankRatesData } = await loadData();
       populateBondSelect("bondSelect", bondsData.bonds);
       populateBondSelect("bondSelectYTM", bondsData.bonds);
       populateBondSelect("bondSelectTx", bondsData.bonds);
+      populateBondSelect("collateralBondCode", bondsData.bonds);
+      initCollateralTab(bondsData.bonds, bankRatesData.rates);
       setTodaySettlement("settle", "settleYTM", "orderDateBuying", "orderDateSelling", "offeringDate");
       
       initIntroTab();
