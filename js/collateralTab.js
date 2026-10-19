@@ -97,7 +97,10 @@ export function parseInvestors(data) {
     const purchaseShares = entry?.purchaseShares;
     const heldShares = entry?.heldShares ?? null;
     const heldBonds = entry?.heldBonds ?? null;
-    if (!name || !regime || !Number.isSafeInteger(purchaseShares) || purchaseShares <= 0
+    if (!regime) {
+      throw new Error(`Investor ${name || index + 1}: regime must be normal or K250; put the investor's name in the name field.`);
+    }
+    if (!name || !Number.isSafeInteger(purchaseShares) || purchaseShares <= 0
         || (heldShares !== null && (!Number.isSafeInteger(heldShares) || heldShares < 0))
         || (heldBonds !== null && (!Number.isSafeInteger(heldBonds) || heldBonds < 0))) {
       throw new Error(`Invalid investor at position ${index + 1} in funds.json.`);

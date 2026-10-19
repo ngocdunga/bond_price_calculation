@@ -1,22 +1,22 @@
 {
   "investors": [
     {
-      "name": "KIS - existing total",
-      "regime": "KIS",
+      "name": "KIS",
+      "regime": "normal",
       "purchaseShares": 7570000,
       "heldShares": null,
       "heldBonds": null
     },
-        {
-      "name": "SIP - existing total",
-      "regime": "SIP",
+    {
+      "name": "SIP",
+      "regime": "normal",
       "purchaseShares": 15150000,
       "heldShares": null,
       "heldBonds": null
     },
     {
-      "name": "KIMMA - existing total",
-      "regime": "KIMMA",
+      "name": "KIMMA",
+      "regime": "normal",
       "purchaseShares": 44890000,
       "heldShares": null,
       "heldBonds": null
