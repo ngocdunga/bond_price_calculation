@@ -86,6 +86,42 @@ export function calculateGivenCollateral(quantity, purchasePrice, stockPrice, bo
   return { securedValue, stockValue, bondValue, collateralValue, cr: collateralValue / securedValue * 100 };
 }
 
+export function parseInvestors(data) {
+  if (!data || !Array.isArray(data.investors)) {
+    throw new Error("funds.json must contain an investors array.");
+  }
+  return data.investors.map((entry, index) => {
+    const name = typeof entry?.name === "string" ? entry.name.trim() : "";
+    const regimeText = String(entry?.regime ?? "").trim().toLowerCase();
+    const regime = regimeText === "normal" ? "normal" : regimeText === "k250" ? "K250" : null;
+    const purchaseShares = entry?.purchaseShares;
+    const heldShares = entry?.heldShares ?? null;
+    const heldBonds = entry?.heldBonds ?? null;
+    if (!name || !regime || !Number.isSafeInteger(purchaseShares) || purchaseShares <= 0
+        || (heldShares !== null && (!Number.isSafeInteger(heldShares) || heldShares < 0))
+        || (heldBonds !== null && (!Number.isSafeInteger(heldBonds) || heldBonds < 0))) {
+      throw new Error(`Invalid investor at position ${index + 1} in funds.json.`);
+    }
+    return { name, regime, purchaseShares, heldShares, heldBonds };
+  });
+}
+
+export function summarizeRequirements(items, stockPrice, bondPrice) {
+  const total = { quantity: 0, investment: 0, obligation: 0, requiredCollateral: 0,
+    shareAllocation: 0, bondAllocation: 0, requiredShares: 0, requiredBonds: 0 };
+  for (const item of items) {
+    for (const key of Object.keys(total)) total[key] += item[key];
+  }
+  total.projectedCr = total.obligation > 0
+    ? (total.requiredShares * stockPrice + total.requiredBonds * bondPrice) / total.obligation * 100
+    : null;
+  return total;
+}
+
+function totalPurchaseShares(investors, regime) {
+  return investors.reduce((sum, investor) => sum + (investor.regime === regime ? investor.purchaseShares : 0), 0);
+}
+
 export function calculateBondCollateralPrice(bond, settlementText, bankRates) {
   const settle = parseDateVN(settlementText);
   const issue = parseDateVN(bond.issueDate);
@@ -116,12 +152,13 @@ export function calculateBondCollateralPrice(bond, settlementText, bankRates) {
 }
 
 export function initCollateralTab(bonds, bankRates) {
-  let funds = null;
+  let investors = null;
   let market = null;
   let marketSymbol = "";
-  const inputIds = ["collateralPurchasePrice", "collateralSettlement", "collateralMinCr", "normalShareRatio", "normalBondRatio", "k250ShareRatio", "k250BondRatio", "normalGivenShares", "normalGivenBonds", "k250GivenShares", "k250GivenBonds"];
+  const inputIds = ["collateralPurchasePrice", "collateralSettlement", "collateralMinCr", "normalShareRatio", "normalBondRatio", "k250ShareRatio", "k250BondRatio"];
   const results = $("collateralResults");
-  const givenResults = $("collateralGivenResults");
+  const investorInputs = $("collateralInvestorInputs");
+  const investorResults = $("collateralInvestorResults");
   const status = $("collateralFetchStatus");
   const history = $("collateralHistory");
   const todayVietnam = new Date(Date.now() + 7 * 60 * 60 * 1000);
@@ -159,45 +196,7 @@ export function initCollateralTab(bonds, bankRates) {
     } catch (error) {
       $("collateralBondPriceInfo").textContent = error.message;
     }
-    if (!funds) return;
-
-    const givenInputs = [
-      { label: "Normal", quantity: funds.normal, sharesId: "normalGivenShares", bondsId: "normalGivenBonds" },
-      { label: "K250", quantity: funds.K250, sharesId: "k250GivenShares", bondsId: "k250GivenBonds" },
-    ];
-    if (!bondQuote || !market || marketSymbol !== stockCode) {
-      givenResults.textContent = "Select a valid bond and fetch stock history to calculate CR from given holdings.";
-    } else {
-      const rows = [];
-      const complete = [];
-      const errors = [];
-      for (const group of givenInputs) {
-        const sharesText = $(group.sharesId).value.trim();
-        const bondsText = $(group.bondsId).value.trim();
-        if (!sharesText && !bondsText) continue;
-        try {
-          const value = calculateGivenCollateral(group.quantity, purchasePrice, market.price, bondQuote.price,
-            inputNumber(group.sharesId), inputNumber(group.bondsId));
-          complete.push(value);
-          rows.push(`<tr><th scope="row">${group.label}</th><td>${vnd.format(value.stockValue)}</td>`
-            + `<td>${vnd.format(value.bondValue)}</td><td>${vnd.format(value.collateralValue)}</td>`
-            + `<td>${vnd.format(value.securedValue)}</td><td><strong>${value.cr.toFixed(2)}%</strong></td></tr>`);
-        } catch (error) {
-          errors.push(`${group.label}: ${error.message}`);
-        }
-      }
-      if (complete.length === 2) {
-        const totalCollateral = complete[0].collateralValue + complete[1].collateralValue;
-        const totalSecured = complete[0].securedValue + complete[1].securedValue;
-        rows.push(`<tr><th scope="row">Total</th><td>${vnd.format(complete[0].stockValue + complete[1].stockValue)}</td>`
-          + `<td>${vnd.format(complete[0].bondValue + complete[1].bondValue)}</td><td>${vnd.format(totalCollateral)}</td>`
-          + `<td>${vnd.format(totalSecured)}</td><td><strong>${(totalCollateral / totalSecured * 100).toFixed(2)}%</strong></td></tr>`);
-      }
-      givenResults.innerHTML = rows.length
-        ? `<div class="table-scroll"><table class="table"><thead><tr><th>Regime</th><th>Stock value (VND)</th><th>Bond value (VND)</th><th>Collateral value (VND)</th><th>Secured value (VND)</th><th>CR</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`
-          + (errors.length ? `<p class="warning">${errors.join(" ")}</p>` : "")
-        : (errors.length ? errors.join(" ") : "Enter whole numbers of shares and bonds for a regime to calculate its CR.");
-    }
+    if (!investors) return;
     const minimumCr = inputNumber("collateralMinCr");
     const nShare = inputNumber("normalShareRatio");
     const nBond = inputNumber("normalBondRatio");
@@ -206,8 +205,55 @@ export function initCollateralTab(bonds, bankRates) {
     try {
       if (!bondQuote) throw new Error($("collateralBondPriceInfo").textContent);
       if (!market || marketSymbol !== stockCode) throw new Error("Fetch a 20 session stock price to calculate required shares.");
-      const normal = calculateCollateral(funds.normal, purchasePrice, market.price, bondQuote.price, nShare, nBond, minimumCr);
-      const k250 = calculateCollateral(funds.K250, purchasePrice, market.price, bondQuote.price, kShare, kBond, minimumCr);
+      let requirements = null;
+      let requirementError = "";
+      try {
+        requirements = investors.map((investor) => calculateCollateral(investor.purchaseShares, purchasePrice,
+          market.price, bondQuote.price, investor.regime === "normal" ? nShare : kShare,
+          investor.regime === "normal" ? nBond : kBond, minimumCr));
+      } catch (error) {
+        requirementError = error.message;
+      }
+      const actuals = investors.map((investor, index) => {
+        const heldShares = $(`investorHeldShares${index}`).value.trim();
+        const heldBonds = $(`investorHeldBonds${index}`).value.trim();
+        if (!heldShares && !heldBonds) return null;
+        if (!heldShares || !heldBonds) return { error: "Enter both held counts" };
+        try {
+          return calculateGivenCollateral(investor.purchaseShares, purchasePrice, market.price,
+            bondQuote.price, inputNumber(`investorHeldShares${index}`), inputNumber(`investorHeldBonds${index}`));
+        } catch (error) {
+          return { error: error.message };
+        }
+      });
+      const investorRows = investors.map((investor, index) => {
+        const required = requirements?.[index];
+        const actual = actuals[index];
+        const securedValue = investor.purchaseShares * purchasePrice * 1.15 ** 2;
+        return `<tr><th scope="row">${escapeHtml(investor.name)}</th><td>${investor.regime}</td>`
+          + `<td>${shares.format(investor.purchaseShares)}</td><td>${Number.isFinite(securedValue) ? vnd.format(securedValue) : "—"}</td>`
+          + `<td>${required ? shares.format(required.requiredShares) : "—"}</td>`
+          + `<td>${required ? shares.format(required.requiredBonds) : "—"}</td>`
+          + `<td>${actual && !actual.error ? vnd.format(actual.collateralValue) : "—"}</td>`
+          + `<td>${actual ? (actual.error || `${actual.cr.toFixed(2)}%`) : "—"}</td></tr>`;
+      });
+      const actualSummary = (indices) => {
+        if (!indices.length || !indices.every((index) => actuals[index] && !actuals[index].error)) return "—";
+        const collateral = indices.reduce((sum, index) => sum + actuals[index].collateralValue, 0);
+        const secured = indices.reduce((sum, index) => sum + actuals[index].securedValue, 0);
+        return `${(collateral / secured * 100).toFixed(2)}%`;
+      };
+      const normalIndices = investors.flatMap((investor, index) => investor.regime === "normal" ? [index] : []);
+      const k250Indices = investors.flatMap((investor, index) => investor.regime === "K250" ? [index] : []);
+      const totalIndices = investors.map((_, index) => index);
+      investorResults.innerHTML = `<div class="table-scroll"><table class="table"><thead><tr><th>Investor</th><th>Regime</th>`
+        + `<th>Purchase shares</th><th>Secured value (VND)</th><th>Required shares</th><th>Required bonds</th>`
+        + `<th>Held collateral (VND)</th><th>CR</th></tr></thead><tbody>${investorRows.join("")}</tbody></table></div>`
+        + `<p><strong>CR from entered holdings:</strong> Normal ${actualSummary(normalIndices)} · K250 ${actualSummary(k250Indices)} · Total ${actualSummary(totalIndices)}</p>`
+        + (requirementError ? `<p class="warning">Required quantities: ${requirementError}</p>` : "");
+      if (requirementError) throw new Error(requirementError);
+      const normal = summarizeRequirements(normalIndices.map((index) => requirements[index]), market.price, bondQuote.price);
+      const k250 = summarizeRequirements(k250Indices.map((index) => requirements[index]), market.price, bondQuote.price);
       const row = (label, value, format = vnd) => `<tr><th scope="row">${label}</th><td>${format.format(value)}</td></tr>`;
       const table = (title, item) => `<div class="box collateral-result"><h4>${title}</h4><table class="table"><tbody>`
         + row("Current shares", item.quantity, shares)
@@ -218,16 +264,21 @@ export function initCollateralTab(bonds, bankRates) {
         + row("Bond allocation (VND)", item.bondAllocation)
         + row("Required collateral shares", item.requiredShares, shares)
         + row("Required collateral bonds", item.requiredBonds, shares)
-        + `<tr><th scope="row">Projected CR (%)</th><td>${item.projectedCr.toFixed(2)}</td></tr>`
+        + `<tr><th scope="row">Projected CR (%)</th><td>${item.projectedCr === null ? "—" : item.projectedCr.toFixed(2)}</td></tr>`
         + `</tbody></table></div>`;
       results.innerHTML = `<p><strong>${stockCode}</strong> VWAP20 rounded down: <strong>${vnd.format(market.price)} VND/share</strong></p>`
         + `<p class="muted">Sessions ${new Date(market.first * 1000).toISOString().slice(0, 10)} to ${new Date(market.last * 1000).toISOString().slice(0, 10)} · Bond: ${escapeHtml(bondCode)} · Minimum CR: ${minimumCr}%</p>`
         + `<div class="ratio-grid">${table("Normal", normal)}${table("K250", k250)}</div>`
         + `<p><strong>Total investment:</strong> ${vnd.format(normal.investment + k250.investment)} VND</p>`;
     } catch (error) {
+      if (!bondQuote || !market || marketSymbol !== stockCode) {
+        investorResults.textContent = "Select a valid bond and fetch stock history to calculate each investor.";
+      }
       // Investment amounts remain useful before a market quote is fetched.
       if (Number.isFinite(purchasePrice) && purchasePrice > 0) {
-        results.textContent = `Normal: ${vnd.format(funds.normal * purchasePrice)} VND · K250: ${vnd.format(funds.K250 * purchasePrice)} VND · Total: ${vnd.format((funds.normal + funds.K250) * purchasePrice)} VND. ${error.message}`;
+        const normalShares = totalPurchaseShares(investors, "normal");
+        const k250Shares = totalPurchaseShares(investors, "K250");
+        results.textContent = `Normal: ${vnd.format(normalShares * purchasePrice)} VND · K250: ${vnd.format(k250Shares * purchasePrice)} VND · Total: ${vnd.format((normalShares + k250Shares) * purchasePrice)} VND. ${error.message}`;
       } else {
         results.textContent = error.message;
       }
@@ -283,16 +334,28 @@ export function initCollateralTab(bonds, bankRates) {
       return response.json();
     })
     .then((data) => {
-      if (![data.normal, data.K250].every((value) => Number.isSafeInteger(value) && value >= 0)) {
-        throw new Error("Invalid fund quantities");
-      }
-      funds = data;
-      $("collateralFundsStatus").textContent = `Normal: ${shares.format(data.normal)} shares · K250: ${shares.format(data.K250)} shares`;
+      investors = parseInvestors(data);
+      const inputRows = investors.map((investor, index) => `<tr><th scope="row">${escapeHtml(investor.name)}</th>`
+        + `<td>${investor.regime}</td><td>${shares.format(investor.purchaseShares)}</td>`
+        + `<td><label class="visually-hidden" for="investorHeldShares${index}">Shares held by ${escapeHtml(investor.name)}</label>`
+        + `<input id="investorHeldShares${index}" type="number" min="0" step="1" inputmode="numeric" value="${investor.heldShares ?? ""}" /></td>`
+        + `<td><label class="visually-hidden" for="investorHeldBonds${index}">Bonds held by ${escapeHtml(investor.name)}</label>`
+        + `<input id="investorHeldBonds${index}" type="number" min="0" step="1" inputmode="numeric" value="${investor.heldBonds ?? ""}" /></td></tr>`).join("");
+      investorInputs.innerHTML = investors.length
+        ? `<div class="table-scroll"><table class="table"><thead><tr><th>Investor</th><th>Regime</th><th>Purchase shares</th><th>Shares held</th><th>Bonds held</th></tr></thead><tbody>${inputRows}</tbody></table></div>`
+        : "No investors in funds.json.";
+      investors.forEach((_, index) => {
+        $(`investorHeldShares${index}`).addEventListener("input", render);
+        $(`investorHeldBonds${index}`).addEventListener("input", render);
+      });
+      $("collateralFundsStatus").textContent = `${investors.length} investors · Normal: ${shares.format(totalPurchaseShares(investors, "normal"))} purchase shares · K250: ${shares.format(totalPurchaseShares(investors, "K250"))} purchase shares`;
       render();
     })
     .catch((error) => {
       $("collateralFundsStatus").textContent = `Could not load funds.json: ${error.message}`;
       results.textContent = "Fund quantities are unavailable.";
+      investorInputs.textContent = "Investor records are unavailable.";
+      investorResults.textContent = "Investor calculations are unavailable.";
     });
 }
 

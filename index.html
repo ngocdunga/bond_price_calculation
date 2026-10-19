@@ -190,26 +190,14 @@
         </div>
       </div>
       <div class="box" style="margin-top: 16px;">
-        <h3>Given collateral holdings</h3>
-        <p class="muted">Enter the stock shares and bonds currently held in each regime to calculate their CR.</p>
-        <div class="ratio-grid">
-          <div>
-            <strong>Normal</strong>
-            <label for="normalGivenShares">Stock shares held</label>
-            <input id="normalGivenShares" type="number" min="0" step="1" inputmode="numeric" />
-            <label for="normalGivenBonds">Bonds held</label>
-            <input id="normalGivenBonds" type="number" min="0" step="1" inputmode="numeric" />
-          </div>
-          <div>
-            <strong>K250</strong>
-            <label for="k250GivenShares">Stock shares held</label>
-            <input id="k250GivenShares" type="number" min="0" step="1" inputmode="numeric" />
-            <label for="k250GivenBonds">Bonds held</label>
-            <input id="k250GivenBonds" type="number" min="0" step="1" inputmode="numeric" />
-          </div>
-        </div>
-        <div id="collateralGivenResults" style="margin-top: 16px;" aria-live="polite">Enter holdings to calculate CR.</div>
-        <p class="muted">CR = (shares held × VWAP20 + bonds held × (par + accrued interest)) / secured obligation × 100%.</p>
+        <h3>Investor holdings</h3>
+        <p class="muted">Each investor comes from funds.json. You can adjust held quantities here for this visit; update funds.json to keep them.</p>
+        <div id="collateralInvestorInputs">Loading investors…</div>
+      </div>
+      <div class="box" style="margin-top: 16px;">
+        <h3>Investor requirements and CR</h3>
+        <div id="collateralInvestorResults" aria-live="polite">Fetch stock history to calculate each investor.</div>
+        <p class="muted">CR = (held shares × rounded-down VWAP20 + held bonds × (par + accrued interest)) / secured obligation × 100%.</p>
       </div>
       <div class="box" style="margin-top: 16px;">
         <h3 id="collateralHistoryTitle">Stock price history</h3>

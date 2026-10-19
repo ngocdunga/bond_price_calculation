@@ -1,4 +1,25 @@
 {
-    "normal": 67610000,
-    "K250": 18930000
+  "investors": [
+    {
+      "name": "KIS - existing total",
+      "regime": "KIS",
+      "purchaseShares": 67610000,
+      "heldShares": null,
+      "heldBonds": null
+    },
+        {
+      "name": "Normal - existing total",
+      "regime": "normal",
+      "purchaseShares": 67610000,
+      "heldShares": null,
+      "heldBonds": null
+    },
+    {
+      "name": "K250 - existing total",
+      "regime": "K250",
+      "purchaseShares": 18930000,
+      "heldShares": null,
+      "heldBonds": null
+    }
+  ]
 }
