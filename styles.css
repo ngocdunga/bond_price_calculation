@@ -235,6 +235,7 @@ canvas {
 .collateral-result .table { overflow-wrap: anywhere; }
 .table-scroll { overflow-x: auto; }
 #collateralHistory .table { min-width: 560px; }
+#collateralGivenResults .table { min-width: 760px; }
 @media (max-width: 720px) {
   .grid, .ratio-grid { grid-template-columns: 1fr; }
   .site-header { position: static; text-align: right; }

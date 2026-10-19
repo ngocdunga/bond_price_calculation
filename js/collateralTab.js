@@ -42,7 +42,10 @@ export function weightedClosingPrice(data, to) {
     .slice(-20);
   if (bars.length < 20) throw new Error(`Only ${bars.length} valid trading sessions were returned; 20 are required.`);
   const volume = bars.reduce((sum, bar) => sum + bar.volume, 0);
-  return { price: bars.reduce((sum, bar) => sum + bar.close * bar.volume, 0) / volume * PRICE_UNIT,
+  const rawPrice = bars.reduce((sum, bar) => sum + bar.close * bar.volume, 0) / volume * PRICE_UNIT;
+  const price = Math.floor(rawPrice);
+  if (!Number.isFinite(price) || price <= 0) throw new Error("The calculated VWAP20 is invalid.");
+  return { price, rawPrice,
     volume,
     bars: bars.map((bar) => ({ timestamp: bar.timestamp, close: bar.close * PRICE_UNIT, volume: bar.volume })),
     first: bars[0].timestamp, last: bars[19].timestamp };
@@ -65,6 +68,22 @@ export function calculateCollateral(quantity, purchasePrice, stockPrice, bondVal
   return { quantity, investment, obligation, requiredCollateral, shareAllocation, bondAllocation,
     requiredShares, requiredBonds,
     projectedCr: obligation === 0 ? 0 : (requiredShares * stockPrice + requiredBonds * bondValue) / obligation * 100 };
+}
+
+export function calculateGivenCollateral(quantity, purchasePrice, stockPrice, bondPrice, givenShares, givenBonds) {
+  if (!Number.isSafeInteger(quantity) || quantity <= 0 || !Number.isFinite(purchasePrice) || purchasePrice <= 0
+      || !Number.isFinite(stockPrice) || stockPrice <= 0 || !Number.isFinite(bondPrice) || bondPrice <= 0
+      || !Number.isSafeInteger(givenShares) || givenShares < 0 || !Number.isSafeInteger(givenBonds) || givenBonds < 0) {
+    throw new Error("Enter non-negative whole numbers of shares and bonds and positive prices.");
+  }
+  const securedValue = quantity * purchasePrice * 1.15 ** 2;
+  const stockValue = givenShares * stockPrice;
+  const bondValue = givenBonds * bondPrice;
+  const collateralValue = stockValue + bondValue;
+  if (![securedValue, collateralValue].every(Number.isFinite)) {
+    throw new Error("The entered amounts are too large to calculate.");
+  }
+  return { securedValue, stockValue, bondValue, collateralValue, cr: collateralValue / securedValue * 100 };
 }
 
 export function calculateBondCollateralPrice(bond, settlementText, bankRates) {
@@ -100,8 +119,9 @@ export function initCollateralTab(bonds, bankRates) {
   let funds = null;
   let market = null;
   let marketSymbol = "";
-  const inputIds = ["collateralPurchasePrice", "collateralSettlement", "collateralMinCr", "normalShareRatio", "normalBondRatio", "k250ShareRatio", "k250BondRatio"];
+  const inputIds = ["collateralPurchasePrice", "collateralSettlement", "collateralMinCr", "normalShareRatio", "normalBondRatio", "k250ShareRatio", "k250BondRatio", "normalGivenShares", "normalGivenBonds", "k250GivenShares", "k250GivenBonds"];
   const results = $("collateralResults");
+  const givenResults = $("collateralGivenResults");
   const status = $("collateralFetchStatus");
   const history = $("collateralHistory");
   const todayVietnam = new Date(Date.now() + 7 * 60 * 60 * 1000);
@@ -118,8 +138,9 @@ export function initCollateralTab(bonds, bankRates) {
       + `<td>${(bar.volume / market.volume * 100).toFixed(2)}%</td></tr>`).join("");
     history.innerHTML = `<p class="muted">VWAP20 here is the volume weighted average of daily closing prices: sum(close × volume) / sum(volume).</p>`
       + `<div class="table-scroll"><table class="table"><thead><tr><th>Date</th><th>Close (VND/share)</th><th>Volume (shares)</th><th>Volume weight</th></tr></thead>`
-      + `<tbody>${rows}</tbody><tfoot><tr><th>20 session total / VWAP20</th><td><strong>${priceVnd.format(market.price)}</strong></td>`
-      + `<td><strong>${shares.format(market.volume)}</strong></td><td>100%</td></tr></tfoot></table></div>`;
+      + `<tbody>${rows}</tbody><tfoot><tr><th>20 session total / raw VWAP20</th><td>${priceVnd.format(market.rawPrice)}</td>`
+      + `<td><strong>${shares.format(market.volume)}</strong></td><td>100%</td></tr>`
+      + `<tr><th>VWAP20 used (rounded down)</th><td><strong>${vnd.format(market.price)}</strong></td><td></td><td></td></tr></tfoot></table></div>`;
   }
 
   function render() {
@@ -139,6 +160,44 @@ export function initCollateralTab(bonds, bankRates) {
       $("collateralBondPriceInfo").textContent = error.message;
     }
     if (!funds) return;
+
+    const givenInputs = [
+      { label: "Normal", quantity: funds.normal, sharesId: "normalGivenShares", bondsId: "normalGivenBonds" },
+      { label: "K250", quantity: funds.K250, sharesId: "k250GivenShares", bondsId: "k250GivenBonds" },
+    ];
+    if (!bondQuote || !market || marketSymbol !== stockCode) {
+      givenResults.textContent = "Select a valid bond and fetch stock history to calculate CR from given holdings.";
+    } else {
+      const rows = [];
+      const complete = [];
+      const errors = [];
+      for (const group of givenInputs) {
+        const sharesText = $(group.sharesId).value.trim();
+        const bondsText = $(group.bondsId).value.trim();
+        if (!sharesText && !bondsText) continue;
+        try {
+          const value = calculateGivenCollateral(group.quantity, purchasePrice, market.price, bondQuote.price,
+            inputNumber(group.sharesId), inputNumber(group.bondsId));
+          complete.push(value);
+          rows.push(`<tr><th scope="row">${group.label}</th><td>${vnd.format(value.stockValue)}</td>`
+            + `<td>${vnd.format(value.bondValue)}</td><td>${vnd.format(value.collateralValue)}</td>`
+            + `<td>${vnd.format(value.securedValue)}</td><td><strong>${value.cr.toFixed(2)}%</strong></td></tr>`);
+        } catch (error) {
+          errors.push(`${group.label}: ${error.message}`);
+        }
+      }
+      if (complete.length === 2) {
+        const totalCollateral = complete[0].collateralValue + complete[1].collateralValue;
+        const totalSecured = complete[0].securedValue + complete[1].securedValue;
+        rows.push(`<tr><th scope="row">Total</th><td>${vnd.format(complete[0].stockValue + complete[1].stockValue)}</td>`
+          + `<td>${vnd.format(complete[0].bondValue + complete[1].bondValue)}</td><td>${vnd.format(totalCollateral)}</td>`
+          + `<td>${vnd.format(totalSecured)}</td><td><strong>${(totalCollateral / totalSecured * 100).toFixed(2)}%</strong></td></tr>`);
+      }
+      givenResults.innerHTML = rows.length
+        ? `<div class="table-scroll"><table class="table"><thead><tr><th>Regime</th><th>Stock value (VND)</th><th>Bond value (VND)</th><th>Collateral value (VND)</th><th>Secured value (VND)</th><th>CR</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`
+          + (errors.length ? `<p class="warning">${errors.join(" ")}</p>` : "")
+        : (errors.length ? errors.join(" ") : "Enter whole numbers of shares and bonds for a regime to calculate its CR.");
+    }
     const minimumCr = inputNumber("collateralMinCr");
     const nShare = inputNumber("normalShareRatio");
     const nBond = inputNumber("normalBondRatio");
@@ -161,7 +220,7 @@ export function initCollateralTab(bonds, bankRates) {
         + row("Required collateral bonds", item.requiredBonds, shares)
         + `<tr><th scope="row">Projected CR (%)</th><td>${item.projectedCr.toFixed(2)}</td></tr>`
         + `</tbody></table></div>`;
-      results.innerHTML = `<p><strong>${stockCode}</strong> 20 session volume weighted closing price: <strong>${priceVnd.format(market.price)} VND/share</strong></p>`
+      results.innerHTML = `<p><strong>${stockCode}</strong> VWAP20 rounded down: <strong>${vnd.format(market.price)} VND/share</strong></p>`
         + `<p class="muted">Sessions ${new Date(market.first * 1000).toISOString().slice(0, 10)} to ${new Date(market.last * 1000).toISOString().slice(0, 10)} · Bond: ${escapeHtml(bondCode)} · Minimum CR: ${minimumCr}%</p>`
         + `<div class="ratio-grid">${table("Normal", normal)}${table("K250", k250)}</div>`
         + `<p><strong>Total investment:</strong> ${vnd.format(normal.investment + k250.investment)} VND</p>`;
