@@ -164,21 +164,21 @@
           <div id="collateralFetchStatus" class="muted" role="status" aria-live="polite"></div>
           <h4>Collateral ratio</h4>
           <label for="collateralMinCr">Minimum CR (%)</label>
-          <input id="collateralMinCr" type="number" min="0.01" step="0.01" value="100" />
+          <input id="collateralMinCr" type="number" min="0.01" step="0.01" value="50" />
           <div class="ratio-grid">
             <div>
               <strong>Normal</strong>
               <label for="normalShareRatio">Shares (%)</label>
-              <input id="normalShareRatio" type="number" min="0" max="100" step="0.01" value="50" />
+              <input id="normalShareRatio" type="number" min="0" max="100" step="0.01" value="40" />
               <label for="normalBondRatio">Bonds (%)</label>
-              <input id="normalBondRatio" type="number" min="0" max="100" step="0.01" value="50" />
+              <input id="normalBondRatio" type="number" min="0" max="100" step="0.01" value="60" />
             </div>
             <div>
               <strong>K250</strong>
               <label for="k250ShareRatio">Shares (%)</label>
-              <input id="k250ShareRatio" type="number" min="0" max="100" step="0.01" value="50" />
+              <input id="k250ShareRatio" type="number" min="0" max="100" step="0.01" value="40" />
               <label for="k250BondRatio">Bonds (%)</label>
-              <input id="k250BondRatio" type="number" min="0" max="100" step="0.01" value="50" />
+              <input id="k250BondRatio" type="number" min="0" max="100" step="0.01" value="60" />
             </div>
           </div>
           <p class="muted">Each regime's shares and bonds percentages must total 100%.</p>

@@ -51,7 +51,7 @@ export function weightedClosingPrice(data, to) {
     first: bars[0].timestamp, last: bars[19].timestamp };
 }
 
-export function calculateCollateral(quantity, purchasePrice, stockPrice, bondValue, sharePercent, bondPercent, minimumCr = 100) {
+export function calculateCollateral(quantity, purchasePrice, stockPrice, bondValue, sharePercent, bondPercent, minimumCr = 50) {
   if (![quantity, purchasePrice, stockPrice, bondValue, sharePercent, bondPercent, minimumCr].every(Number.isFinite)
       || quantity < 0 || purchasePrice <= 0 || stockPrice <= 0 || bondValue <= 0
       || sharePercent < 0 || bondPercent < 0 || sharePercent > 100 || bondPercent > 100
