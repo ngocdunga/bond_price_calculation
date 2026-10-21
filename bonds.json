@@ -54,7 +54,7 @@
           "isFloat": false
         },
         {
-          "payment": 10,
+          "payment": 11,
           "rate": 0.038,
           "isFloat": true,
           "floorRate": 0.11
