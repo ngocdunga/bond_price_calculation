@@ -21,26 +21,6 @@
       "couponPrecision": 0
     },
     {
-      "code": "CMX123035",
-      "interestSchedule": [
-        {
-          "payment": 1,
-          "rate": 0.112,
-          "isFloat": false
-        }
-      ],
-      "listing": "public",
-      "category": "corporate",
-      "issueDate": "30/10/2023",
-      "maturity": "30/10/2026",
-      "recordDays": 10,
-      "frequency": 4,
-      "faceValue": 100000,
-      "referenceBank": [],
-      "regime": "NORMAL",
-      "couponPrecision": 0
-    },
-    {
       "code": "TDP124010",
       "interestSchedule": [
         {
